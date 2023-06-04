@@ -8,6 +8,7 @@ use CortexPE\Commando\BaseSubCommand;
 use Exception;
 use pocketmine\command\CommandSender;
 use SenseiTarzan\LanguageSystem\Component\LanguageManager;
+use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
 use SenseiTarzan\MultiEconomy\Commands\args\PlayerArgument;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
@@ -36,15 +37,15 @@ class addBalanceSubCommand extends BaseSubCommand
         $amount = $args["amount"];
         $economy = $parent->getSymbole();
         $id = $parent->getName();
-        Await::g2c( MultiEconomyManager::getInstance()->getEconomy($id)->add($player, $amount),
-        function (bool $online) use ($player, $amount, $economy, $sender) {
-            $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::add_economy_sender($player, $economy, $amount)));
-            if (!$online) return;
-            $player->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($player, CustomKnownTranslationFactory::add_economy_receiver($economy, $amount)));
-        }, function (Exception $exception) use ($economy){
-            if ($exception->getCode() === 417) {
-                Main::getInstance()->getLogger()->error("Erreur pendant la sauvegarde des données de l'économie: " . $economy);
-            }
-        });
+        Await::g2c(MultiEconomyManager::getInstance()->getEconomy($id)->add($player, $amount),
+            function (bool $online) use ($player, $amount, $economy, $sender) {
+                $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::add_economy_sender($player, $economy, $amount)));
+                if (!$online) return;
+                $player->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($player, CustomKnownTranslationFactory::add_economy_receiver($economy, $amount)));
+            }, [
+                EconomyUpdateException::class => function (EconomyUpdateException $exception) use ($sender) {
+                    Main::getInstance()->getLogger()->logException($exception);
+                },
+            ]);
     }
 }

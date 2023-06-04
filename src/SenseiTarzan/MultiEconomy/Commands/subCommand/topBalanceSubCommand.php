@@ -9,6 +9,7 @@ use SenseiTarzan\DataBase\Component\DataManager;
 use SenseiTarzan\LanguageSystem\Component\LanguageManager;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
+use SenseiTarzan\MultiEconomy\Main;
 use SenseiTarzan\MultiEconomy\Utils\CustomKnownTranslationFactory;
 use SOFe\AwaitGenerator\Await;
 
@@ -38,7 +39,7 @@ class topBalanceSubCommand extends BaseSubCommand
             }
             $sender->sendMessage($text);
         }, function ()  use ($sender){
-            $sender->sendMessage("§cUne erreur est survenue lors de la récupération des données.");
+            Main::getInstance()->getLogger()->logException(new Exception("Error when get top balance"));
         });
     }
 }

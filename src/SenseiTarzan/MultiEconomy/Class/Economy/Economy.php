@@ -6,11 +6,10 @@ use Generator;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use SenseiTarzan\DataBase\Component\DataManager;
+use SenseiTarzan\MultiEconomy\Class\Exception\EconomyNoHasAmountException;
 use SenseiTarzan\MultiEconomy\Component\EcoPlayerManager;
 use SenseiTarzan\MultiEconomy\Main;
 use SOFe\AwaitGenerator\Await;
-use Throwable;
-
 class Economy
 {
 
@@ -162,9 +161,13 @@ class Economy
     public function has(Player|string $player, float $amount): Generator
     {
         return Await::promise(function ($resolve, $reject) use ($player, $amount) {
-            Await::g2c($this->get($player), function ($result) use ($resolve, $amount) {
-                $resolve($result >= $amount);
-            }, $reject);
+            Await::g2c($this->get($player), function ($result) use ($resolve, $reject, $amount) {
+                if ($result >= $amount){
+                    $resolve(true);
+                    return;
+                }
+                $reject( new EconomyNoHasAmountException());
+            });
         });
     }
 }

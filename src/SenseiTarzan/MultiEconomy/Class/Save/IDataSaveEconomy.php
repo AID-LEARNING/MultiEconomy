@@ -29,7 +29,6 @@ abstract class IDataSaveEconomy implements IDataSave
     {
         Await::g2c($this->createPromiseEconomy($player), function ($data) use ($player) {
             EcoPlayerManager::getInstance()->addEcoPlayer(new EcoPlayer($player instanceof Player ? $player->getName() : $player, $data));
-
         });
     }
 
@@ -43,7 +42,7 @@ abstract class IDataSaveEconomy implements IDataSave
      */
     public function updateOnline(string $id, string $type, mixed $data): Generator
     {
-            return $this->createPromiseUpdate($id, $type, $data);
+        return $this->createPromiseUpdate($id, $type, $data);
     }
 
     /**

@@ -12,17 +12,17 @@ final class AsyncSortTask extends AsyncTask
 {
 
 
-    private ThreadSafeArray $ecomony;
+    private ThreadSafeArray $data;
 
     public function __construct(private readonly string $economy, private readonly int $limit, array $data, $resolve)
     {
-        $this->ecomony = ThreadSafeArray::fromArray($data);
+        $this->data = ThreadSafeArray::fromArray($data);
         $this->storeLocal("resolve", $resolve);
     }
 
     public function onRun(): void
     {
-        $all = (array)$this->ecomony;
+        $all = (array)$this->data;
         array_walk($all, function (&$value) {
             $value = $value[$this->economy];
         });

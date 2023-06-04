@@ -9,6 +9,7 @@ use pocketmine\player\Player;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
 use pocketmine\utils\Config;
+use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
 use SenseiTarzan\MultiEconomy\Main;
 use SenseiTarzan\MultiEconomy\Task\AsyncSortTask;
 use SOFe\AwaitGenerator\Await;
@@ -74,7 +75,7 @@ final class YAMLSave extends IDataSaveEconomy
                 $this->data->save();
                 $resolve($balance);
             } catch (Throwable) {
-                $reject(new Exception(code: 403));
+                $reject(new EconomyUpdateException("Error updating economy $economyType for $id with $type " . $data["amount"]));
             }
         });
     }

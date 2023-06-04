@@ -9,6 +9,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use SenseiTarzan\LanguageSystem\Component\LanguageManager;
+use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
 use SenseiTarzan\MultiEconomy\Commands\args\PlayerArgument;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
@@ -34,6 +35,10 @@ class payBalanceSubCommand extends BaseSubCommand
             $sender->sendMessage("§cLe joueur n'est pas en ligne.");
             return;
         }
+        if ($target->getName() === $sender->getName()) {
+            $sender->sendMessage("§cVous ne pouvez pas vous payer vous-même.");
+            return;
+        }
         /**
          * @var EconomyCommand $parent
          */
@@ -53,10 +58,10 @@ class payBalanceSubCommand extends BaseSubCommand
                 $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::pay_economy_sender($target, $economy, $amount)));
                 if (!$online) return;
                 $target->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($target, CustomKnownTranslationFactory::pay_economy_receiver($sender, $economy, $amount)));
-            }, function (\Exception $exception) use ($economy){
-                if ($exception->getCode() === 417) {
-                    Main::getInstance()->getLogger()->error("Erreur pendant la sauvegarde des données de l'économie: " . $economy);
-                }
-            });
+            }, [
+                EconomyUpdateException::class => function (EconomyUpdateException $exception) use ($sender) {
+                    Main::getInstance()->getLogger()->logException($exception);
+                },
+            ]);
     }
 }

@@ -8,6 +8,7 @@ use CortexPE\Commando\BaseSubCommand;
 use Exception;
 use pocketmine\command\CommandSender;
 use SenseiTarzan\LanguageSystem\Component\LanguageManager;
+use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
 use SenseiTarzan\MultiEconomy\Commands\args\PlayerArgument;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
@@ -41,10 +42,10 @@ class setBalanceSubCommand extends BaseSubCommand
                 $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::set_economy_sender($player, $economy, $amount)));
                 if (!$online) return;
                 $player->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($player, CustomKnownTranslationFactory::set_economy_receiver($economy, $amount)));
-            }, function (Exception $exception) use ($economy) {
-                if ($exception->getCode() === 417) {
-                    Main::getInstance()->getLogger()->error("Erreur pendant la sauvegarde des données de l'économie: " . $economy);
-                }
-            });
+            }, [
+                EconomyUpdateException::class => function (EconomyUpdateException $exception) use ($sender) {
+                    Main::getInstance()->getLogger()->logException($exception);
+                },
+            ]);
     }
 }
