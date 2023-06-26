@@ -28,6 +28,8 @@ abstract class IDataSaveEconomy implements IDataSave
 
     abstract public function createPromiseEconomy(Player|string $player): Generator;
 
+    abstract public function createPromiseGetBalance(Player|string $player, string $economy): Generator;
+
     /**
      * @param string $id
      * @param string $type

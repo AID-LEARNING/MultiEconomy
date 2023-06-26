@@ -10,6 +10,7 @@ use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
+use SenseiTarzan\MultiEconomy\Component\EcoPlayerManager;
 use SenseiTarzan\MultiEconomy\Main;
 use SenseiTarzan\MultiEconomy\Task\AsyncSortTask;
 use SOFe\AwaitGenerator\Await;
@@ -37,6 +38,13 @@ final class YAMLSave extends IDataSaveEconomy
     {
         return Await::promise(function ($resolve) use ($player) {
             $resolve($this->data->get(strtolower($player instanceof Player ? $player->getName() : $player), []));
+        });
+    }
+
+    public function createPromiseGetBalance(Player|string $player, string $economy): Generator
+    {
+        return Await::promise(function ($resolve) use ($player, $economy) {
+            $resolve(EcoPlayerManager::getInstance()->getEcoPlayer($player)?->getEconomy($economy) ?? $this->data->getNested(strtolower(($player instanceof Player ? $player->getName() : $player) . ".$economy"), 0));
         });
     }
 

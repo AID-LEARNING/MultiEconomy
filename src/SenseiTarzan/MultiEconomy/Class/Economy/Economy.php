@@ -136,9 +136,7 @@ class Economy
      */
     public function get(Player|string $player): Generator
     {
-        return Await::promise(function ($resolve) use ($player) {
-            $resolve(EcoPlayerManager::getInstance()->getEcoPlayer($player)->getEconomy($this->getId()));
-        });
+        return DataManager::getInstance()->getDataSystem()->createPromiseGetBalance($player, $this->getId());
     }
 
     /**
@@ -147,16 +145,16 @@ class Economy
      * @param float $amount
      * @return Generator <bool> online or offline receiver
      */
-    public function pay(Player $sender, Player|string $receiver, float $amount): Generator
+    public function pay(Player|string $sender, Player|string $receiver, float $amount): Generator
     {
-        Main::getInstance()->getLogger()->info("Creation de la promesse de pay de " . $sender->getName() . " vers " . ($receiver instanceof Player ? $receiver->getName() : $receiver) . " pour " . $amount . " " . $this->getName());
+        Main::getInstance()->getLogger()->info("Creation de la promesse de pay de " . ($sender instanceof Player ? $sender->getName() : $sender) . " vers " . ($receiver instanceof Player ? $receiver->getName() : $receiver) . " pour " . $amount . " " . $this->getName());
         return Await::promise(function ($resolve, $reject) use ($sender, $receiver, $amount) {
             Await::f2c(function () use ($sender, $receiver, $amount): Generator {
                 yield from $this->has($sender, $amount);
                 yield from $this->subtract($sender, $amount);
                 return yield from $this->add($receiver, $amount);
             }, function (bool $result) use ($resolve, $reject, $sender, $receiver, $amount) {
-                Main::getInstance()->getLogger()->info("Promesse de pay de " . $sender->getName() . " vers " . ($receiver instanceof Player ? $receiver->getName() : $receiver) . " pour " . $amount . " " . $this->getName() . " terminé");
+                Main::getInstance()->getLogger()->info("Promesse de pay de " . ($sender instanceof Player ? $sender->getName() : $sender) . " vers " . ($receiver instanceof Player ? $receiver->getName() : $receiver) . " pour " . $amount . " " . $this->getName() . " terminé");
                 $resolve($result);
             }, $reject);
         });
