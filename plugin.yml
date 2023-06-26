@@ -1,6 +1,6 @@
 name: MultiEconomy
 api: 5.0.0
-version: 1.0.0
+version: 1.0.2
 main: SenseiTarzan\MultiEconomy\Main
 permissions:
   "multieconomy.command":

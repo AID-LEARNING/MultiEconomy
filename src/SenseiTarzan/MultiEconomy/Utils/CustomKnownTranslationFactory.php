@@ -62,6 +62,25 @@ class CustomKnownTranslationFactory
     {
         return new Translatable(CustomKnownTranslationKeys::BODY_ECONOMY_TOP, ['rank' => $rank, 'player' => $player, 'symbole' => $symbole, 'amount' => $amount]);
     }
+    public static function error_target_not_online(string $target): Translatable
+    {
+        return new Translatable(CustomKnownTranslationKeys::ERROR_TARGET_NOT_ONLINE, ['target' => $target]);
+    }
+
+    public static function error_target_yourself(): Translatable
+    {
+        return new Translatable(CustomKnownTranslationKeys::ERROR_TARGET_YOURSELF);
+    }
+
+    public static function error_negative_amount(): Translatable
+    {
+        return new Translatable(CustomKnownTranslationKeys::ERROR_NEGATIVE_AMOUNT);
+    }
+
+    public static function error_not_enough_money(): Translatable{
+        return new Translatable(CustomKnownTranslationKeys::ERROR_NOT_ENOUGH_MONEY);
+    }
+
 
     private static function player_name(Player|string $player): string
     {

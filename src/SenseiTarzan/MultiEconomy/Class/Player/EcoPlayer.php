@@ -5,6 +5,8 @@ namespace SenseiTarzan\MultiEconomy\Class\Player;
 use JsonSerializable;
 use SenseiTarzan\DataBase\Component\DataManager;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
+use SenseiTarzan\MultiEconomy\Main;
+use SOFe\AwaitGenerator\Await;
 
 class EcoPlayer implements JsonSerializable
 {
@@ -54,7 +56,9 @@ class EcoPlayer implements JsonSerializable
                 continue;
             }
             $this->economy[$id] = $economy->getDefault();
-            DataManager::getInstance()->getDataSystem()->updateOnline($this->getId(), "set", ["economy" => $id, "amount" => $economy->getDefault()]);
+            Await::g2c($economy->set($this->getName(), $economy->getDefault()), function () {}, function (\Throwable $e) {
+                Main::getInstance()->getLogger()->error($e->getMessage());
+            });
         }
     }
 

@@ -149,12 +149,16 @@ class Economy
      */
     public function pay(Player $sender, Player|string $receiver, float $amount): Generator
     {
-        Main::getInstance()->getLogger()->info("Creation de la promesse de pay de " . $sender->getName() . " vers " . $receiver . " pour " . $amount . " " . $this->getName());
+        Main::getInstance()->getLogger()->info("Creation de la promesse de pay de " . $sender->getName() . " vers " . ($receiver instanceof Player ? $receiver->getName() : $receiver) . " pour " . $amount . " " . $this->getName());
         return Await::promise(function ($resolve, $reject) use ($sender, $receiver, $amount) {
-            Await::g2c(Await::all([$this->subtract($sender, $amount), $this->add($receiver, $amount)]), function ($result) use ($resolve) {
-                $resolve($result[1]);
+            Await::f2c(function () use ($sender, $receiver, $amount): Generator {
+                yield from $this->has($sender, $amount);
+                yield from $this->subtract($sender, $amount);
+                return yield from $this->add($receiver, $amount);
+            }, function (bool $result) use ($resolve, $reject, $sender, $receiver, $amount) {
+                Main::getInstance()->getLogger()->info("Promesse de pay de " . $sender->getName() . " vers " . ($receiver instanceof Player ? $receiver->getName() : $receiver) . " pour " . $amount . " " . $this->getName() . " terminé");
+                $resolve($result);
             }, $reject);
-            Main::getInstance()->getLogger()->info("Promesse de pay de " . $sender->getName() . " vers " . $receiver . " pour " . $amount . " " . $this->getName() . " terminé");
         });
     }
 
@@ -163,10 +167,10 @@ class Economy
         return Await::promise(function ($resolve, $reject) use ($player, $amount) {
             Await::g2c($this->get($player), function ($result) use ($resolve, $reject, $amount) {
                 if ($result >= $amount){
-                    $resolve(true);
+                    $resolve();
                     return;
                 }
-                $reject( new EconomyNoHasAmountException());
+                $reject(new EconomyNoHasAmountException());
             });
         });
     }

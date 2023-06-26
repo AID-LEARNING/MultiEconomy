@@ -38,14 +38,14 @@ class subtractBalanceSubCommand extends BaseSubCommand
         $economy = $parent->getSymbole();
         $id = $parent->getName();
         Await::g2c(MultiEconomyManager::getInstance()->getEconomy($id)->subtract($target, $amount),
-        function (bool $online) use ($target, $amount, $economy, $sender) {
-            $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::subtract_economy_sender($target, $economy, $amount)));
-            if (!$online) return;
-            $target->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($target, CustomKnownTranslationFactory::subtract_economy_receiver($economy, $amount)));
-        }, [
+            function (bool $online) use ($target, $amount, $economy, $sender) {
+                $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::subtract_economy_sender($target, $economy, $amount)));
+                if (!$online) return;
+                $target->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($target, CustomKnownTranslationFactory::subtract_economy_receiver($economy, $amount)));
+            }, [
                 EconomyUpdateException::class => function (EconomyUpdateException $exception) use ($sender) {
                     Main::getInstance()->getLogger()->logException($exception);
-                },
+                }
             ]);
     }
 }

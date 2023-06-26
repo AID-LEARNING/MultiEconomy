@@ -9,6 +9,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use SenseiTarzan\LanguageSystem\Component\LanguageManager;
+use SenseiTarzan\MultiEconomy\Class\Exception\EconomyNoHasAmountException;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
 use SenseiTarzan\MultiEconomy\Commands\args\PlayerArgument;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
@@ -32,11 +33,11 @@ class payBalanceSubCommand extends BaseSubCommand
     {
         $target = $args["player"];
         if (is_string($target)) {
-            $sender->sendMessage("§cLe joueur n'est pas en ligne.");
+            $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::error_target_not_online($target)));
             return;
         }
         if ($target->getName() === $sender->getName()) {
-            $sender->sendMessage("§cVous ne pouvez pas vous payer vous-même.");
+            $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::error_target_yourself()));
             return;
         }
         /**
@@ -45,7 +46,7 @@ class payBalanceSubCommand extends BaseSubCommand
         $parent = $this->getParent();
         $amount = $args["amount"];
         if ($amount < 0) {
-            $sender->sendMessage("§cVous ne pouvez pas payer un montant négatif.");
+            $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::error_negative_amount()));
             return;
         }
         $id = $parent->getName();
@@ -59,9 +60,12 @@ class payBalanceSubCommand extends BaseSubCommand
                 if (!$online) return;
                 $target->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($target, CustomKnownTranslationFactory::pay_economy_receiver($sender, $economy, $amount)));
             }, [
+                EconomyNoHasAmountException::class => function () use ($sender) {
+                    $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::error_not_enough_money()));
+                },
                 EconomyUpdateException::class => function (EconomyUpdateException $exception) use ($sender) {
                     Main::getInstance()->getLogger()->logException($exception);
-                },
+                }
             ]);
     }
 }

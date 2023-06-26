@@ -4,6 +4,7 @@ namespace SenseiTarzan\MultiEconomy\Task;
 
 use pmmp\thread\ThreadSafeArray;
 use pocketmine\scheduler\AsyncTask;
+use SenseiTarzan\MultiEconomy\Utils\Format;
 
 /**
  * @internal MultiEconomy
@@ -16,7 +17,7 @@ final class AsyncSortTask extends AsyncTask
 
     public function __construct(private readonly string $economy, private readonly int $limit, array $data, $resolve)
     {
-        $this->data = ThreadSafeArray::fromArray($data);
+        $this->data = Format::arrayToThreadSafeArray($data);
         $this->storeLocal("resolve", $resolve);
     }
 
@@ -27,13 +28,13 @@ final class AsyncSortTask extends AsyncTask
             $value = $value[$this->economy];
         });
         arsort($all);
-        $this->setResult(ThreadSafeArray::fromArray(array_slice($all, 0, $this->limit)));
+        $this->setResult(Format::arrayToThreadSafeArray(array_slice($all, 0, $this->limit)));
     }
 
     public function onCompletion(): void
     {
         $resolve = $this->fetchLocal("resolve");
-        $resolve((array)$this->getResult());
+        $resolve($this->getResult());
     }
 
 }

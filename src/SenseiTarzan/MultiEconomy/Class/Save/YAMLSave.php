@@ -22,7 +22,6 @@ final class YAMLSave extends IDataSaveEconomy
     public function __construct(Main $plugin)
     {
         $this->data = new Config($plugin->getDataFolder() . "data.yml", Config::YAML);
-        //$this->data->setAll(array_merge($this->data->getAll(), Main::getInstance()->generateFakePlayers(10000)));
     }
 
     public function getName(): string
@@ -82,7 +81,7 @@ final class YAMLSave extends IDataSaveEconomy
     public function createPromiseTop(string $economy, int $limite = 10): Generator
     {
         return Await::promise(function ($resolve) use ($economy, $limite) {
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncSortTask($economy, $limite - 1, $this->data->getAll(), $resolve));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncSortTask($economy, $limite, $this->data->getAll(), $resolve));
         });
     }
 }
