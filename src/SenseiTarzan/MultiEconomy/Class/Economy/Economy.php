@@ -163,12 +163,12 @@ class Economy
     public function has(Player|string $player, float $amount): Generator
     {
         return Await::promise(function ($resolve, $reject) use ($player, $amount) {
-            Await::g2c($this->get($player), function ($result) use ($resolve, $reject, $amount) {
+            Await::g2c($this->get($player), function ($result) use ($player, $resolve, $reject, $amount) {
                 if ($result >= $amount){
                     $resolve();
                     return;
                 }
-                $reject(new EconomyNoHasAmountException());
+                $reject(new EconomyNoHasAmountException($player instanceof Player ? $player->getName() : $player));
             });
         });
     }
