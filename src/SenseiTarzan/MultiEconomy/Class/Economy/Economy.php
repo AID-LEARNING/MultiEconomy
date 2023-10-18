@@ -58,7 +58,6 @@ class Economy
      */
     public function add(Player|string $player, float $amount): Generator
     {
-        var_dump($player->getName());
         $name = $player instanceof Player ? $player->getName() : $player;
         Main::getInstance()->getLogger()->info("Creation de la promesse de add de " . $name . " de " . $amount . " " . $this->getName());
         return Await::promise(function ($resolve, $reject) use ($player, $amount, $name): void {
