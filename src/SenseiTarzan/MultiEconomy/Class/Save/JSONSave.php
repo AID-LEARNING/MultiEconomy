@@ -13,18 +13,18 @@ use SenseiTarzan\MultiEconomy\Task\AsyncSortTask;
 use SOFe\AwaitGenerator\Await;
 use Throwable;
 
-final class YAMLSave extends IDataSaveEconomy
+final class JSONSave extends IDataSaveEconomy
 {
     private Config $data;
 
     public function __construct(Main $plugin)
     {
-        $this->data = new Config($plugin->getDataFolder() . "data.yml", Config::YAML);
+        $this->data = new Config($plugin->getDataFolder() . "data.json", Config::JSON);
     }
 
     public function getName(): string
     {
-        return "YAML";
+        return "JSON";
     }
 
     /**

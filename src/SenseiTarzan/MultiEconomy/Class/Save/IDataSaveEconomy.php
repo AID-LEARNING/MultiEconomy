@@ -38,7 +38,7 @@ abstract class IDataSaveEconomy implements IDataSave
      */
     public function updateOnline(string $id, string $type, mixed $data): Generator
     {
-        return $this->createPromiseUpdate($id, $type, $data);
+        return $this->createPromiseUpdate(mb_strtolower($id), $type, $data);
     }
 
     /**
@@ -46,7 +46,7 @@ abstract class IDataSaveEconomy implements IDataSave
      */
     public function updateOffline(string $id, string $type, mixed $data): Generator
     {
-        return $this->createPromiseUpdate($id, $type, $data);
+        return $this->createPromiseUpdate(mb_strtolower($id), $type, $data);
     }
 
 

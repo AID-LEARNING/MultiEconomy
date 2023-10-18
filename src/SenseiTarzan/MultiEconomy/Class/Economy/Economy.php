@@ -10,6 +10,7 @@ use SenseiTarzan\MultiEconomy\Class\Exception\EconomyNoHasAmountException;
 use SenseiTarzan\MultiEconomy\Component\EcoPlayerManager;
 use SenseiTarzan\MultiEconomy\Main;
 use SOFe\AwaitGenerator\Await;
+
 class Economy
 {
 
@@ -57,7 +58,7 @@ class Economy
      */
     public function add(Player|string $player, float $amount): Generator
     {
-        $name= $player instanceof Player ? $player->getName() : $player;
+        $name = $player instanceof Player ? $player->getName() : $player;
         Main::getInstance()->getLogger()->info("Creation de la promesse de add de " . $name . " de " . $amount . " " . $this->getName());
         return Await::promise(function ($resolve, $reject) use ($player, $amount, $name): void {
             Await::f2c(function () use ($player, $amount, $name) {
@@ -84,10 +85,10 @@ class Economy
      */
     public function subtract(Player|string $player, float $amount): Generator
     {
-        $name= $player instanceof Player ? $player->getName() : $player;
+        $name = $player instanceof Player ? $player->getName() : $player;
         Main::getInstance()->getLogger()->info("Creation de la promesse de substract de " . $name . " pour " . $amount . " " . $this->getName());
-        return Await::promise(function ($resolve, $reject) use ($player, $amount,$name) {
-            Await::f2c(function () use ($player, $amount,$name) {
+        return Await::promise(function ($resolve, $reject) use ($player, $amount, $name) {
+            Await::f2c(function () use ($player, $amount, $name) {
                 if (is_string($player)) {
                     $player = Server::getInstance()->getPlayerExact($player) ?? $player;
                 }
@@ -110,7 +111,7 @@ class Economy
      */
     public function set(Player|string $player, float $amount): Generator
     {
-        $name= $player instanceof Player ? $player->getName() : $player;
+        $name = $player instanceof Player ? $player->getName() : $player;
         Main::getInstance()->getLogger()->info("Creation de la promesse de set de " . $name . " pour " . $amount . " " . $this->getName());
         return Await::promise(function ($resolve, $reject) use ($player, $amount, $name) {
             Await::f2c(function () use ($player, $amount, $name) {
@@ -164,7 +165,7 @@ class Economy
     {
         return Await::promise(function ($resolve, $reject) use ($player, $amount) {
             Await::g2c($this->get($player), function ($result) use ($player, $resolve, $reject, $amount) {
-                if ($result >= $amount){
+                if ($result >= $amount) {
                     $resolve();
                     return;
                 }

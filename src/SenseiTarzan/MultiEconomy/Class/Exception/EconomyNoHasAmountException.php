@@ -2,6 +2,8 @@
 
 namespace SenseiTarzan\MultiEconomy\Class\Exception;
 
-class EconomyNoHasAmountException extends \Exception
+use Exception;
+
+class EconomyNoHasAmountException extends Exception
 {
 }

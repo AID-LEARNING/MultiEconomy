@@ -3,7 +3,6 @@
 namespace SenseiTarzan\MultiEconomy\Commands\subCommand;
 
 use CortexPE\Commando\BaseSubCommand;
-use Exception;
 use pmmp\thread\ThreadSafeArray;
 use pocketmine\command\CommandSender;
 use SenseiTarzan\DataBase\Component\DataManager;
@@ -40,7 +39,7 @@ class topBalanceSubCommand extends BaseSubCommand
                 $text .= LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::body_economy_top(++$index, $name, $amounts, $economy)) . "\n";
             }
             $sender->sendMessage($text);
-        }, function (Throwable $exception){
+        }, function (Throwable $exception) {
             Main::getInstance()->getLogger()->logException($exception);
         });
     }

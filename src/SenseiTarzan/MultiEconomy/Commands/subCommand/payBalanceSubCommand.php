@@ -3,11 +3,9 @@
 namespace SenseiTarzan\MultiEconomy\Commands\subCommand;
 
 use CortexPE\Commando\args\FloatArgument;
-use CortexPE\Commando\args\TargetPlayerArgument;
 use CortexPE\Commando\BaseSubCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\Server;
 use SenseiTarzan\LanguageSystem\Component\LanguageManager;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyNoHasAmountException;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;

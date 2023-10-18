@@ -22,11 +22,10 @@ final class EcoPlayerManager
     }
 
     /**
-     * @param Player $player
      * @param EcoPlayer $ecoPlayer
      * @return void
      */
-    public function addEcoPlayer( EcoPlayer $ecoPlayer): void
+    public function addEcoPlayer(EcoPlayer $ecoPlayer): void
     {
         $this->listEcoPlayer[$ecoPlayer->getId()] = $ecoPlayer;
         $ecoPlayer->firstConnection();

@@ -1,4 +1,3 @@
-Money:
-  default: 1000
-  symbol: $
-
+---
+type-data: json
+...

@@ -8,7 +8,8 @@ use pocketmine\Server;
 
 class PlayerArgument extends TargetPlayerArgument
 {
-    public function parse(string $argument, CommandSender $sender){
+    public function parse(string $argument, CommandSender $sender): string
+    {
         return Server::getInstance()->getPlayerExact($argument) ?? strtolower($argument);
     }
 }

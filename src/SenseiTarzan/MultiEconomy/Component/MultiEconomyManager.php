@@ -5,6 +5,8 @@ namespace SenseiTarzan\MultiEconomy\Component;
 use pocketmine\utils\SingletonTrait;
 use SenseiTarzan\MultiEconomy\Class\Economy\Economy;
 use SenseiTarzan\MultiEconomy\Main;
+use SenseiTarzan\Path\PathScanner;
+use Symfony\Component\Filesystem\Path;
 
 final class MultiEconomyManager
 {
@@ -19,12 +21,17 @@ final class MultiEconomyManager
     public function __construct(Main $plugin)
     {
         self::setInstance($this);
-        foreach ($plugin->getConfig()->getAll() as $name => $info) {
-            $this->addEconomy(new Economy($name, $info["symbol"] ?? "$", $info["default"] ?? 0));
+        foreach (PathScanner::scanDirectoryToConfig(Path::join($plugin->getDataFolder(), "Economy")) as $info) {
+            if (!$info->exists("name")) {
+                unset($info);
+                continue;
+            }
+            $this->addEconomy(new Economy($info->get("name"), $info->get("symbol", "$"), $info->get("default", 0)));
+            unset($info);
         }
     }
 
-    public function addEconomy( Economy $economy): void
+    public function addEconomy(Economy $economy): void
     {
         $this->listEconomy[$economy->getId()] = $economy;
         Main::getInstance()->getLogger()->info("Economy {$economy->getName()} added");
@@ -48,7 +55,6 @@ final class MultiEconomyManager
     {
         return isset($this->listEconomy[$id]);
     }
-
 
 
 }

@@ -2,7 +2,9 @@
 
 namespace SenseiTarzan\MultiEconomy\Class\Exception;
 
-class EconomyUpdateException extends \Exception
+use Exception;
+
+class EconomyUpdateException extends Exception
 {
     public function __construct(string $message)
     {
