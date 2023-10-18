@@ -21,8 +21,8 @@ final class MultiEconomyManager
     public function __construct(Main $plugin)
     {
         self::setInstance($this);
-        foreach (PathScanner::scanDirectoryToConfig(Path::join($plugin->getDataFolder(), "Economy")) as $info) {
-            if (!$info->exists("name")) {
+        foreach (PathScanner::scanDirectoryToConfig(Path::join($plugin->getDataFolder(), "Economy"), ["yml"]) as $info) {
+            if (is_null($info->get("name", null)) || empty($info->get("name"))) {
                 unset($info);
                 continue;
             }
