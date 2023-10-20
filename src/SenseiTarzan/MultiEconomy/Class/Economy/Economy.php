@@ -115,7 +115,6 @@ class Economy
         Main::getInstance()->getLogger()->info("Creation de la promesse de set de " . $name . " pour " . $amount . " " . $this->getName());
         return Await::promise(function ($resolve, $reject) use ($player, $amount, $name) {
             Await::f2c(function () use ($player, $amount, $name) {
-
                 if (is_string($player)) {
                     $player = Server::getInstance()->getPlayerExact($player) ?? $player;
                 }
@@ -131,17 +130,84 @@ class Economy
         });
     }
 
+
     /**
      * @param Player|string $player
-     * @return Generator <float>
+     * @param float $amount
+     * @return Generator <bool> online or offline
      */
-    public function get(Player|string $player): Generator
+    public function multiply(Player|string $player, float $amount): Generator
     {
-        return DataManager::getInstance()->getDataSystem()->createPromiseGetBalance($player, $this->getId());
+        $name = $player instanceof Player ? $player->getName() : $player;
+        Main::getInstance()->getLogger()->info("Creation de la promesse de multiply de " . $name . " de " . $amount . " " . $this->getName());
+        return Await::promise(function ($resolve, $reject) use ($player, $amount, $name): void {
+            Await::f2c(function () use ($player, $amount, $name) {
+                if (is_string($player)) {
+                    $player = Server::getInstance()->getPlayerExact($player) ?? $player;
+                }
+                if ($player instanceof Player) {
+                    EcoPlayerManager::getInstance()->getEcoPlayer($player)?->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "multiply", ["economy" => $this->getId(), "amount" => $amount]));
+                    Main::getInstance()->getLogger()->info("Promesse de multiply de " . $name . " de " . $amount . " " . $this->getName() . " terminé");
+                    return true;
+                }
+                yield from DataManager::getInstance()->getDataSystem()->updateOffline($player, "multiply", ["economy" => $this->getId(), "amount" => $amount]);
+                Main::getInstance()->getLogger()->info("Promesse de multiply de " . $name . " de " . $amount . " " . $this->getName() . " terminé");
+                return false;
+
+            }, $resolve, $reject);
+        });
+    }
+
+
+    /**
+     * @param Player|string $player
+     * @param float $amount
+     * @return Generator <bool> online or offline
+     */
+    public function division(Player|string $player, float $amount): Generator
+    {
+        $name = $player instanceof Player ? $player->getName() : $player;
+        Main::getInstance()->getLogger()->info("Creation de la promesse de division de " . $name . " de " . $amount . " " . $this->getName());
+        return Await::promise(function ($resolve, $reject) use ($player, $amount, $name): void {
+            Await::f2c(function () use ($player, $amount, $name) {
+                if (is_string($player)) {
+                    $player = Server::getInstance()->getPlayerExact($player) ?? $player;
+                }
+                if ($player instanceof Player) {
+                    EcoPlayerManager::getInstance()->getEcoPlayer($player)?->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "division", ["economy" => $this->getId(), "amount" => $amount]));
+                    Main::getInstance()->getLogger()->info("Promesse de division de " . $name . " de " . $amount . " " . $this->getName() . " terminé");
+                    return true;
+                }
+                yield from DataManager::getInstance()->getDataSystem()->updateOffline($player, "division", ["economy" => $this->getId(), "amount" => $amount]);
+                Main::getInstance()->getLogger()->info("Promesse de division de " . $name . " de " . $amount . " " . $this->getName() . " terminé");
+                return false;
+
+            }, $resolve, $reject);
+        });
+    }
+
+
+    /**
+     * @param Player|string $player
+     * @param float $amount
+     * @return Generator <bool> online or offline
+     */
+    public function percent(Player|string $player, float $amount): Generator
+    {
+        return $this->multiply($player, $amount / 100);
     }
 
     /**
-     * @param Player $sender
+     * @param Player|string $player
+     * @return Generator
+     */
+    public function get(Player|string $player): Generator
+    {
+        return DataManager::getInstance()->getDataSystem()?->createPromiseGetBalance($player, $this->getId());
+    }
+
+    /**
+     * @param Player|string $sender
      * @param Player|string $receiver
      * @param float $amount
      * @return Generator <bool> online or offline receiver

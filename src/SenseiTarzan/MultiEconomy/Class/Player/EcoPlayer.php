@@ -58,8 +58,7 @@ class EcoPlayer implements JsonSerializable
                 continue;
             }
             $this->economy[$id] = $economy->getDefault();
-            Await::g2c($economy->set($this->getName(), $economy->getDefault()), function () {
-            }, function (Throwable $e) {
+            Await::g2c($economy->set($this->getName(), $economy->getDefault()), fn() => null, function (Throwable $e) {
                 Main::getInstance()->getLogger()->error($e->getMessage());
             });
         }
