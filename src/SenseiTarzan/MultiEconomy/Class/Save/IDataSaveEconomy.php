@@ -19,7 +19,7 @@ abstract class IDataSaveEconomy implements IDataSave
     private const PAY = "pay";
 
 
-    public function loadDataPlayer(Player|string $player): void
+    final public function loadDataPlayer(Player|string $player): void
     {
         Await::g2c($this->createPromiseEconomy($player), function ($data) use ($player) {
             EcoPlayerManager::getInstance()->addEcoPlayer(new EcoPlayer($player instanceof Player ? $player->getName() : $player, $data));
@@ -28,6 +28,11 @@ abstract class IDataSaveEconomy implements IDataSave
 
     abstract public function createPromiseEconomy(Player|string $player): Generator;
 
+    /**
+     * @param Player|string $player
+     * @param string $economy
+     * @return Generator<float>
+     */
     abstract public function createPromiseGetBalance(Player|string $player, string $economy): Generator;
 
     /**
@@ -36,17 +41,17 @@ abstract class IDataSaveEconomy implements IDataSave
      * @param mixed $data
      * @return Generator
      */
-    public function updateOnline(string $id, string $type, mixed $data): Generator
+    final public function updateOnline(string $id, string $type, mixed $data): Generator
     {
-        return $this->createPromiseUpdate(mb_strtolower($id), $type, $data);
+        return $this->createPromiseUpdate($id, $type, $data);
     }
 
     /**
      * @inheritDoc
      */
-    public function updateOffline(string $id, string $type, mixed $data): Generator
+    final public function updateOffline(string $id, string $type, mixed $data): Generator
     {
-        return $this->createPromiseUpdate(mb_strtolower($id), $type, $data);
+        return $this->createPromiseUpdate($id, $type, $data);
     }
 
 

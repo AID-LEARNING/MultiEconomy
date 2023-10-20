@@ -34,14 +34,14 @@ final class JSONSave extends IDataSaveEconomy
     public function createPromiseEconomy(Player|string $player): Generator
     {
         return Await::promise(function ($resolve) use ($player) {
-            $resolve($this->data->get(strtolower($player instanceof Player ? $player->getName() : $player), []));
+            $resolve($this->data->get(($player instanceof Player ? $player->getName() : $player), []));
         });
     }
 
     public function createPromiseGetBalance(Player|string $player, string $economy): Generator
     {
         return Await::promise(function ($resolve) use ($player, $economy) {
-            $resolve(EcoPlayerManager::getInstance()->getEcoPlayer($player)?->getEconomy($economy) ?? $this->data->getNested(strtolower(($player instanceof Player ? $player->getName() : $player) . ".$economy"), 0));
+            $resolve(EcoPlayerManager::getInstance()->getEcoPlayer($player)?->getEconomy($economy) ?? $this->data->getNested(($player instanceof Player ? $player->getName() : $player) . ".$economy", 0));
         });
     }
 
@@ -71,6 +71,23 @@ final class JSONSave extends IDataSaveEconomy
                         if ($balance < 0) {
                             $balance = 0;
                         }
+                        break;
+                    }
+                    case "multiply":
+                    {
+                        $balance = $this->data->getNested($id . ".$economyType");
+                        $balance *= $data["amount"];
+                        break;
+                    }
+                    case "division":
+                    {
+                        $balance = $this->data->getNested($id . ".$economyType");
+                        if ($data["amount"] === 0)
+                        {
+                            $reject(new \InvalidArgumentException("Dont you cant divided with zero"));
+                            return ;
+                        }
+                        $balance /= $data["amount"];
                         break;
                     }
                 }
