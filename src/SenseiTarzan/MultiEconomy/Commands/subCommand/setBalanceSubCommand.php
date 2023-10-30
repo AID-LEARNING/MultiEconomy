@@ -7,6 +7,7 @@ use CortexPE\Commando\BaseSubCommand;
 use pocketmine\command\CommandSender;
 use SenseiTarzan\LanguageSystem\Component\LanguageManager;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
+use SenseiTarzan\MultiEconomy\Class\Exception\InfiniteValueException;
 use SenseiTarzan\MultiEconomy\Commands\args\PlayerArgument;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
@@ -44,6 +45,7 @@ class setBalanceSubCommand extends BaseSubCommand
                 EconomyUpdateException::class => function (EconomyUpdateException $exception) use ($sender) {
                     Main::getInstance()->getLogger()->logException($exception);
                 },
+                InfiniteValueException::class => function (){}
             ]);
     }
 }

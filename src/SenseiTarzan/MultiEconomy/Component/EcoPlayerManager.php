@@ -2,9 +2,12 @@
 
 namespace SenseiTarzan\MultiEconomy\Component;
 
+use Generator;
 use pocketmine\player\Player;
+use pocketmine\Server;
 use pocketmine\utils\SingletonTrait;
 use SenseiTarzan\MultiEconomy\Class\Player\EcoPlayer;
+use SOFe\AwaitGenerator\Await;
 
 final class EcoPlayerManager
 {
@@ -23,13 +26,14 @@ final class EcoPlayerManager
 
     /**
      * @param EcoPlayer $ecoPlayer
-     * @return void
+     * @return Generator
      */
-    public function addEcoPlayer(EcoPlayer $ecoPlayer): void
+    public function addEcoPlayer(EcoPlayer $ecoPlayer): Generator
     {
-        $this->listEcoPlayer[$ecoPlayer->getId()] = $ecoPlayer;
-        $ecoPlayer->firstConnection();
-
+        return Await::promise(function ($resolve) use($ecoPlayer): void{
+            $this->listEcoPlayer[$ecoPlayer->getId()]  = $ecoPlayer;
+            $resolve();
+        });
     }
 
     public function removeEcoPlayer(Player $player): void

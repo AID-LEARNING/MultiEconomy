@@ -2,12 +2,16 @@
 
 namespace SenseiTarzan\MultiEconomy\Class\Save;
 
+use Error;
+use Exception;
 use Generator;
+use PHPUnit\Event\Code\Throwable;
 use pocketmine\player\Player;
 use SenseiTarzan\DataBase\Class\IDataSave;
 use SenseiTarzan\MultiEconomy\Class\Player\EcoPlayer;
 use SenseiTarzan\MultiEconomy\Component\EcoPlayerManager;
 use SOFe\AwaitGenerator\Await;
+use TypeError;
 
 abstract class IDataSaveEconomy implements IDataSave
 {
@@ -21,10 +25,17 @@ abstract class IDataSaveEconomy implements IDataSave
 
     final public function loadDataPlayer(Player|string $player): void
     {
-        Await::g2c($this->createPromiseEconomy($player), function ($data) use ($player) {
-            EcoPlayerManager::getInstance()->addEcoPlayer(new EcoPlayer($player instanceof Player ? $player->getName() : $player, $data));
+        Await::f2c(function () use ($player): Generator{
+            $data = yield from $this->createPromiseEconomy($player);
+            return (yield from EcoPlayerManager::getInstance()->addEcoPlayer(new EcoPlayer($player, $data)));
+        }, null, function (Exception|Error $throwable) use ($player){
+            if ($player instanceof Player){
+                $player->kick($throwable->getMessage());
+            }
         });
     }
+
+    abstract protected function createPromiseAllBalance(Player|string $player): Generator;
 
     abstract public function createPromiseEconomy(Player|string $player): Generator;
 

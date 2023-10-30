@@ -30,6 +30,6 @@ class PlayerArgument  extends BaseArgument{
 
     public function parse(string $argument, CommandSender $sender): string|Player
     {
-        return Server::getInstance()->getPlayerExact($argument) ?? strtolower($argument);
+        return Server::getInstance()->getPlayerExact($argument) ?? $argument;
     }
 }

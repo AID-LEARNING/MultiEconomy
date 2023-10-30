@@ -3,6 +3,7 @@
 namespace SenseiTarzan\MultiEconomy\Class\Player;
 
 use JsonSerializable;
+use pocketmine\player\Player;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
 use SenseiTarzan\MultiEconomy\Main;
 use SOFe\AwaitGenerator\Await;
@@ -13,9 +14,9 @@ class EcoPlayer implements JsonSerializable
 
     private string $id;
 
-    public function __construct(private readonly string $name, private array $economy)
+    public function __construct(private readonly Player $player, private array $economy)
     {
-        $this->id = strtolower($this->name);
+        $this->id = strtolower($this->player->getName());
     }
 
     /**
@@ -28,7 +29,7 @@ class EcoPlayer implements JsonSerializable
 
     public function getName(): string
     {
-        return $this->name;
+        return $this->player->getName();
     }
 
     /**
@@ -49,19 +50,6 @@ class EcoPlayer implements JsonSerializable
     public function existsEconomy(string $id): bool
     {
         return isset($this->economy[$id]);
-    }
-
-    public function firstConnection(): void
-    {
-        foreach (MultiEconomyManager::getInstance()->getEconomyList() as $id => $economy) {
-            if ($this->existsEconomy($id)) {
-                continue;
-            }
-            $this->economy[$id] = $economy->getDefault();
-            Await::g2c($economy->set($this->getName(), $economy->getDefault()), fn() => null, function (Throwable $e) {
-                Main::getInstance()->getLogger()->error($e->getMessage());
-            });
-        }
     }
 
 

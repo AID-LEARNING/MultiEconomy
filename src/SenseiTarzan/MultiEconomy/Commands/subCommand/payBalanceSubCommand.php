@@ -9,6 +9,7 @@ use pocketmine\player\Player;
 use SenseiTarzan\LanguageSystem\Component\LanguageManager;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyNoHasAmountException;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
+use SenseiTarzan\MultiEconomy\Class\Exception\InfiniteValueException;
 use SenseiTarzan\MultiEconomy\Commands\args\PlayerArgument;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
@@ -63,7 +64,8 @@ class payBalanceSubCommand extends BaseSubCommand
                 },
                 EconomyUpdateException::class => function (EconomyUpdateException $exception) use ($sender) {
                     Main::getInstance()->getLogger()->logException($exception);
-                }
+                },
+                InfiniteValueException::class => function (){}
             ]);
     }
 }

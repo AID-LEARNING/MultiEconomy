@@ -8,6 +8,7 @@ use pocketmine\Server;
 use pocketmine\utils\Config;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
 use SenseiTarzan\MultiEconomy\Component\EcoPlayerManager;
+use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
 use SenseiTarzan\MultiEconomy\Main;
 use SenseiTarzan\MultiEconomy\Task\AsyncSortTask;
 use SOFe\AwaitGenerator\Await;
@@ -33,8 +34,29 @@ final class YAMLSave extends IDataSaveEconomy
      */
     public function createPromiseEconomy(Player|string $player): Generator
     {
-        return Await::promise(function ($resolve) use ($player) {
-            $resolve($this->data->get(strtolower($player instanceof Player ? $player->getName() : $player), []));
+        return Await::promise(function ($resolve, $reject) use ($player) {
+            Await::f2c(function () use($player): Generator{
+                yield from $this->createPromiseAllBalance($player);
+                return ($this->data->get(strtolower($player instanceof Player ? $player->getName() : $player), []));
+            }, $resolve, $reject);
+        });
+    }
+
+
+
+    protected function createPromiseAllBalance(Player|string $player): Generator
+    {
+        return Await::promise(function ($resolve, $reject) use ($player): void {
+            try {
+                foreach (MultiEconomyManager::getInstance()->getEconomyList() as $economy){
+                    $search = ($player instanceof Player ? $player->getName() : $player) . "." . $economy->getId();
+                    $this->data->setNested($search, $this->data->getNested($search, $economy->getDefault()));
+                }
+                $this->data->save();
+                $resolve();
+            } catch (Throwable) {
+                $reject(new EconomyUpdateException("Error Creation Blance of All Economy"));
+            }
         });
     }
 

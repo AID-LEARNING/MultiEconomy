@@ -8,6 +8,7 @@ use pocketmine\Server;
 use pocketmine\utils\Config;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
 use SenseiTarzan\MultiEconomy\Component\EcoPlayerManager;
+use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
 use SenseiTarzan\MultiEconomy\Main;
 use SenseiTarzan\MultiEconomy\Task\AsyncSortTask;
 use SOFe\AwaitGenerator\Await;
@@ -35,6 +36,23 @@ final class JSONSave extends IDataSaveEconomy
     {
         return Await::promise(function ($resolve) use ($player) {
             $resolve($this->data->get(($player instanceof Player ? $player->getName() : $player), []));
+        });
+    }
+
+
+    protected function createPromiseAllBalance(Player|string $player): Generator
+    {
+        return Await::promise(function ($resolve, $reject) use ($player): void {
+            try {
+                foreach (MultiEconomyManager::getInstance()->getEconomyList() as $economy){
+                    $search = ($player instanceof Player ? $player->getName() : $player) . "." . $economy->getId();
+                    $this->data->setNested($search, $this->data->getNested($search, $economy->getDefault()));
+                }
+                $this->data->save();
+                $resolve();
+            } catch (Throwable) {
+                $reject(new EconomyUpdateException("Error Creation Blance of All Economy"));
+            }
         });
     }
 
