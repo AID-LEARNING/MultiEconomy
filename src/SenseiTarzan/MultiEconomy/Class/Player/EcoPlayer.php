@@ -5,6 +5,8 @@ namespace SenseiTarzan\MultiEconomy\Class\Player;
 use JsonSerializable;
 use pocketmine\player\Player;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
+use SenseiTarzan\MultiEconomy\events\EcolPlayerLoadedEvent;
+use SenseiTarzan\MultiEconomy\events\EconomyChangeDataEvent;
 use SenseiTarzan\MultiEconomy\Main;
 use SOFe\AwaitGenerator\Await;
 use Throwable;
@@ -17,6 +19,8 @@ class EcoPlayer implements JsonSerializable
     public function __construct(private readonly Player $player, private array $economy)
     {
         $this->id = strtolower($this->player->getName());
+        $event = new EcolPlayerLoadedEvent($this->player);
+        $event->call();
     }
 
     /**
@@ -44,6 +48,8 @@ class EcoPlayer implements JsonSerializable
 
     public function setEconomy(string $id, float $amount): void
     {
+        $event = new EconomyChangeDataEvent($this->player, $id, $amount);
+        $event->call();
         $this->economy[$id] = $amount;
     }
 
