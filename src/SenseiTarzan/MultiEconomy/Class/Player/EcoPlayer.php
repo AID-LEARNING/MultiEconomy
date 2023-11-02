@@ -19,8 +19,10 @@ class EcoPlayer implements JsonSerializable
     public function __construct(private readonly Player $player, private array $economy)
     {
         $this->id = strtolower($this->player->getName());
-        $event = new EcolPlayerLoadedEvent($this->player);
-        $event->call();
+        if (EcolPlayerLoadedEvent::hasHandlers()) {
+            $event = new EcolPlayerLoadedEvent($this->player, $this);
+            $event->call();
+        }
     }
 
     /**
@@ -48,9 +50,11 @@ class EcoPlayer implements JsonSerializable
 
     public function setEconomy(string $id, float $amount): void
     {
-        $event = new EconomyChangeDataEvent($this->player, $id, $amount);
-        $event->call();
         $this->economy[$id] = $amount;
+        if (EconomyChangeDataEvent::hasHandlers()) {
+            $event = new EconomyChangeDataEvent($this->player, $id, $amount);
+            $event->call();
+        }
     }
 
     public function existsEconomy(string $id): bool
