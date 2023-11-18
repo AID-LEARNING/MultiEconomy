@@ -23,7 +23,7 @@ class payBalanceSubCommand extends BaseSubCommand
 
     protected function prepare(): void
     {
-        $this->setPermission("multieconomy.command.add");
+        $this->setPermission("multieconomy.command.pay");
         $this->registerArgument(0, new PlayerArgument(name: "player"));
         $this->registerArgument(1, new FloatArgument("amount"));
     }

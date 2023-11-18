@@ -1,9 +1,8 @@
 <?php
 
 namespace SenseiTarzan\MultiEconomy\events;
-
 use pocketmine\event\player\PlayerEvent;
-use pocketmine\player\Player;
+use pocketmine\math\VectorMath;use pocketmine\player\Player;
 
 class EconomyChangeDataEvent extends PlayerEvent
 {
