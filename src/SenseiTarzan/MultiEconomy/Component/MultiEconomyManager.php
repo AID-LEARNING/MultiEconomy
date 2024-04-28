@@ -42,7 +42,6 @@ final class MultiEconomyManager
         return $this->listEconomy[$id] ?? null;
     }
 
-
     /**
      * @return Economy[]
      */

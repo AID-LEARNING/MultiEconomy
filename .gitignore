@@ -1,3 +1,5 @@
 .idea
 out
 .phar
+.bat
+.sh

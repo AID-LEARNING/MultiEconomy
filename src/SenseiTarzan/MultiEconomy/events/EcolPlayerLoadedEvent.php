@@ -1,6 +1,6 @@
 <?php
 
-namespace SenseiTarzan\MultiEconomy\events;
+namespace SenseiTarzan\MultiEconomy\Events;
 
 use pocketmine\event\player\PlayerEvent;
 use pocketmine\player\Player;
