@@ -21,3 +21,4 @@ permissions:
   "multieconomy.command.top":
     default: true
     description: "MultiEconomy command"
+
