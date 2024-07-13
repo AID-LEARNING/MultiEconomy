@@ -2,6 +2,7 @@
 branches:
   - stable
   - next-major
+  - master
 projects:
   MultiEconomy:
     path: ""
