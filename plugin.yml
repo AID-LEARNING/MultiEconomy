@@ -1,0 +1,23 @@
+name: MultiEconomy
+api: 5.0.0
+version: 1.0.2
+main: SenseiTarzan\MultiEconomy\Main
+permissions:
+  "multieconomy.command":
+    default: true
+    description: "MultiEconomy command"
+  "multieconomy.command.add":
+    default: op
+    description: "MultiEconomy command"
+  "multieconomy.command.subtract":
+    default: op
+    description: "MultiEconomy command"
+  "multieconomy.command.set":
+    default: op
+    description: "MultiEconomy command"
+  "multieconomy.command.pay":
+    default: true
+    description: "MultiEconomy command"
+  "multieconomy.command.top":
+    default: true
+    description: "MultiEconomy command"
