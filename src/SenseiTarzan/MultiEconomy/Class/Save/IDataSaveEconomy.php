@@ -52,7 +52,7 @@ abstract class IDataSaveEconomy implements IDataSave
 		});
 	}
 
-	public function loadDataPlayerByMiddleware(Player|string $player) : Generator
+	final public function loadDataPlayerByMiddleware(Player|string $player) : Generator
 	{
 		return Await::promise(function ($resolve) use ($player){
 			Await::f2c(function () use ($player){
