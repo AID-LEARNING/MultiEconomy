@@ -58,7 +58,7 @@ abstract class IDataSaveEconomy implements IDataSave
 			Await::f2c(function () use ($player){
 				$data = yield from $this->createPromiseEconomy($player);
 				try {
-					return EcoPlayerManager::getInstance()->addEcoPlayer(new EcoPlayer($player, $data));
+					return yield from EcoPlayerManager::getInstance()->addEcoPlayer(new EcoPlayer($player, $data));
 				} catch (Error|Exception $throwable){
 					return $throwable;
 				}
