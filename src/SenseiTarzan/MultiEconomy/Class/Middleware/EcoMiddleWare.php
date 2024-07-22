@@ -21,22 +21,29 @@
 
 declare(strict_types=1);
 
-namespace SenseiTarzan\MultiEconomy\Events;
+namespace SenseiTarzan\MultiEconomy\Class\Middleware;
 
-use pocketmine\event\player\PlayerEvent;
-use pocketmine\player\Player;
-use SenseiTarzan\MultiEconomy\Class\Player\EcoPlayer;
+use Generator;
+use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\network\mcpe\protocol\SetLocalPlayerAsInitializedPacket;
+use SenseiTarzan\DataBase\Component\DataManager;
+use SenseiTarzan\Middleware\Class\IMiddleWare;
 
-class EcolPlayerLoadedEvent extends PlayerEvent
+class EcoMiddleWare implements IMiddleWare
 {
 
-	public function __construct(Player $player, private readonly EcoPlayer $ecoPlayer)
+	public function getName() : string
 	{
-		$this->player = $player;
+		return "EcoMiddleWare";
 	}
 
-	public function getEcoPlayer() : EcoPlayer
+	public function onDetectPacket() : string
 	{
-		return $this->ecoPlayer;
+		return SetLocalPlayerAsInitializedPacket::class;
+	}
+
+	public function getPromise(DataPacketReceiveEvent $event) : Generator
+	{
+		return DataManager::getInstance()->getDataSystem()->loadDataPlayerByMiddleware($event->getOrigin()->getPlayer());
 	}
 }
