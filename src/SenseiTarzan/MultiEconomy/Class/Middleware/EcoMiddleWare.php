@@ -27,14 +27,17 @@ use Generator;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\SetLocalPlayerAsInitializedPacket;
 use SenseiTarzan\DataBase\Component\DataManager;
+use SenseiTarzan\Middleware\Class\AttributeMiddlewarePriority;
 use SenseiTarzan\Middleware\Class\IMiddleWare;
+use SenseiTarzan\Middleware\Class\MiddlewarePriority;
 
+#[AttributeMiddlewarePriority(MiddlewarePriority::MONITOR)]
 class EcoMiddleWare implements IMiddleWare
 {
 
 	public function getName() : string
 	{
-		return "EcoMiddleWare";
+		return "Eco MiddleWare";
 	}
 
 	public function onDetectPacket() : string
