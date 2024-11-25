@@ -69,7 +69,7 @@ abstract class IDataSaveEconomy implements IDataSave
 	/**
 	 * @return Generator<float>
 	 */
-	abstract public function createPromiseGetBalance(Player|string $player, string $economy) : Generator;
+	abstract public function createPromiseGetBalance(Player|string $player, string $economy, bool $cache = true) : Generator;
 
 	final public function updateOnline(string $id, string $type, mixed $data) : Generator
 	{

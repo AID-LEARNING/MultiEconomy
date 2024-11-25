@@ -260,15 +260,15 @@ class Economy
 		return $this->multiply($player, $amount / 100);
 	}
 
-	public function get(Player|string $player) : Generator
+	public function get(Player|string $player, bool $cache = true) : Generator
 	{
-		return Await::promise(function ($resolve, $reject) use ($player) : void{
+		return Await::promise(function ($resolve, $reject) use ($cache, $player) : void{
 			$data = DataManager::getInstance()->getDataSystem();
 			if ($data === null){
 				$resolve($this->getDefault());
 				return;
 			}
-			Await::g2c($data->createPromiseGetBalance($player, $this->getId()), $resolve, $reject);
+			Await::g2c($data->createPromiseGetBalance($player, $this->getId(), $cache), $resolve, $reject);
 		});
 	}
 

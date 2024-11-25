@@ -76,7 +76,7 @@ final class YAMLSave extends IDataSaveEconomy
 		});
 	}
 
-	public function createPromiseGetBalance(Player|string $player, string $economy) : Generator
+	public function createPromiseGetBalance(Player|string $player, string $economy, bool $cache = true) : Generator
 	{
 		return Await::promise(function ($resolve) use ($player, $economy) {
 			$resolve(EcoPlayerManager::getInstance()->getEcoPlayer($player)?->getEconomy($economy) ?? $this->data->getNested(strtolower(($player instanceof Player ? $player->getName() : $player) . ".$economy"), 0));
