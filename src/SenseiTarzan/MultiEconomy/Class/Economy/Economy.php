@@ -280,24 +280,18 @@ class Economy
 		Main::getInstance()->getLogger()->info("Creation de la promesse de pay de " . ($sender instanceof Player ? $sender->getName() : $sender) . " vers " . ($receiver instanceof Player ? $receiver->getName() : $receiver) . " pour " . $amount . " " . $this->getName());
 		return Await::promise(function ($resolve, $reject) use ($sender, $receiver, $amount) {
 			Await::f2c(function () use ($sender, $receiver, $amount) : Generator {
-				try {
-					if (is_string($sender)) {
-						$sender = Server::getInstance()->getPlayerExact($sender) ?? $sender;
-					}
-					if (is_string($receiver)) {
-						$receiver = Server::getInstance()->getPlayerExact($receiver) ?? $receiver;
-					}
-					$data = yield from DataManager::getInstance()->getDataSystem()->createPromiseUpdate($sender, "pay", ["economy" => $this->getId(), "amount" => $amount, "default" => $this->getDefault(), "receiver" => is_string($receiver) ? $receiver : $receiver->getName()]);
-					if ($sender instanceof Player)
-						EcoPlayerManager::getInstance()->getEcoPlayer($sender)->setEconomy($this->getId(), $data["sender"]);
-					if ($receiver instanceof Player)
-						EcoPlayerManager::getInstance()->getEcoPlayer($receiver)->setEconomy($this->getId(), $data["receiver"]);
-					return !is_string($receiver) && $receiver->isConnected();
-				}catch (Throwable) {
-					yield from $this->has($sender, $amount);
-					yield from $this->subtract($sender, $amount);
-					return yield from $this->add($receiver, $amount);
+				if (is_string($sender)) {
+					$sender = Server::getInstance()->getPlayerExact($sender) ?? $sender;
 				}
+				if (is_string($receiver)) {
+					$receiver = Server::getInstance()->getPlayerExact($receiver) ?? $receiver;
+				}
+				$data = yield from DataManager::getInstance()->getDataSystem()->createPromiseUpdate($sender, "pay", ["economy" => $this->getId(), "amount" => $amount, "default" => $this->getDefault(), "receiver" => is_string($receiver) ? $receiver : $receiver->getName()]);
+				if ($sender instanceof Player)
+					EcoPlayerManager::getInstance()->getEcoPlayer($sender)->setEconomy($this->getId(), $data["sender"]);
+				if ($receiver instanceof Player)
+					EcoPlayerManager::getInstance()->getEcoPlayer($receiver)->setEconomy($this->getId(), $data["receiver"]);
+				return !is_string($receiver) && $receiver->isConnected();
 			}, function (bool $result) use ($resolve, $sender, $receiver, $amount) {
 				Main::getInstance()->getLogger()->info("Promesse de pay de " . ($sender instanceof Player ? $sender->getName() : $sender) . " vers " . ($receiver instanceof Player ? $receiver->getName() : $receiver) . " pour " . $amount . " " . $this->getName() . " terminé");
 				$resolve($result);

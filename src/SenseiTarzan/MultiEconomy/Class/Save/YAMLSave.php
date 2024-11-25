@@ -122,6 +122,24 @@ final class YAMLSave extends IDataSaveEconomy
 						$balance /= $data["amount"];
 						break;
 					}
+					case "pay":
+					{
+						$senderBalance = $this->data->getNested($id . ".$economyType");
+						if ($data["amount"] > $senderBalance)
+						{
+							$reject(new \InvalidArgumentException("Dont you cant divided with zero"));
+							return ;
+						}
+						$senderBalance -= $data["amount"];
+						$this->data->setNested($id . ".$economyType", $balance);
+						$this->data->setNested($data["receiver"] . ".$economyType", $receiverBalance = $this->data->getNested($data["receiver"] . ".$economyType", $data["default"]) + $data["amount"]);
+						$this->data->save();
+						$resolve([
+							"sender" => $senderBalance,
+							"receiver" => $receiverBalance,
+						]);
+						break;
+					}
 				}
 				$this->data->setNested($id . ".$economyType", $balance);
 				$this->data->save();
