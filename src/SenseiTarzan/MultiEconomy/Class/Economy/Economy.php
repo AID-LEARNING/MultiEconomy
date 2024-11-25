@@ -286,7 +286,7 @@ class Economy
 				if (is_string($receiver)) {
 					$receiver = Server::getInstance()->getPlayerExact($receiver) ?? $receiver;
 				}
-				$data = yield from DataManager::getInstance()->getDataSystem()->createPromiseUpdate($sender, "pay", ["economy" => $this->getId(), "amount" => $amount, "default" => $this->getDefault(), "receiver" => is_string($receiver) ? $receiver : $receiver->getName()]);
+				$data = yield from DataManager::getInstance()->getDataSystem()->createPromiseUpdate(is_string($sender) ? $sender : $sender->getName(), "pay", ["economy" => $this->getId(), "amount" => $amount, "default" => $this->getDefault(), "receiver" => is_string($receiver) ? $receiver : $receiver->getName()]);
 				if ($sender instanceof Player)
 					EcoPlayerManager::getInstance()->getEcoPlayer($sender)->setEconomy($this->getId(), $data["sender"]);
 				if ($receiver instanceof Player)
