@@ -6,6 +6,9 @@ permissions:
   "multieconomy.command":
     default: true
     description: "MultiEconomy command"
+  "multieconomy.command.see":
+    default: op
+    description: "MultiEconomy command"
   "multieconomy.command.add":
     default: op
     description: "MultiEconomy command"
