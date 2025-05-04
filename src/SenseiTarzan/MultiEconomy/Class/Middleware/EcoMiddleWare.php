@@ -30,6 +30,7 @@ use SenseiTarzan\DataBase\Component\DataManager;
 use SenseiTarzan\Middleware\Class\AttributeMiddlewarePriority;
 use SenseiTarzan\Middleware\Class\IMiddleWare;
 use SenseiTarzan\Middleware\Class\MiddlewarePriority;
+use SenseiTarzan\MultiEconomy\Main;
 
 #[AttributeMiddlewarePriority(MiddlewarePriority::MONITOR)]
 class EcoMiddleWare implements IMiddleWare
@@ -47,6 +48,6 @@ class EcoMiddleWare implements IMiddleWare
 
 	public function getPromise(DataPacketReceiveEvent $event) : Generator
 	{
-		return DataManager::getInstance()->getDataSystem()->loadDataPlayerByMiddleware($event->getOrigin()->getPlayer());
+		return Main::getInstance()->getDataManager()->getDataSystem()->loadDataPlayerByMiddleware($event->getOrigin()->getPlayer());
 	}
 }

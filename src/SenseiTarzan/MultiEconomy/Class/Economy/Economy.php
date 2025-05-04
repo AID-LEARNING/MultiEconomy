@@ -43,6 +43,8 @@ class Economy
 
 	private readonly string $id;
 
+    private array $queueTransaction = [];
+
 	public function __construct(private readonly string $name, private readonly string $symbol, private readonly float $default)
 	{
 		$this->id = strtolower($name);
@@ -68,189 +70,118 @@ class Economy
 		return $this->symbol;
 	}
 
-	/**
-	 * @return Generator <bool> online or offline
-	 */
-	public function add(EcoPlayer|Player|string $player, float $amount) : Generator
-	{
-		$name = $player instanceof Player ? $player->getName() : $player;
-		Main::getInstance()->getLogger()->info("Creation de la promesse de add de " . $name . " de " . $amount . " " . $this->getName());
-		return Await::promise(function ($resolve, $reject) use ($player, $amount, $name) : void {
-			if (is_infinite($amount)){
-				$reject(new InfiniteValueException("Infinite Value"));
-				return;
-			}
-			Await::f2c(function () use ($player, $amount, $name) {
-				if (is_string($player)) {
-					$player = Server::getInstance()->getPlayerExact($player) ?? $player;
-				}
-				if ($player instanceof EcoPlayer){
-					$player->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "add", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				if ($player instanceof Player) {
-					EcoPlayerManager::getInstance()->getEcoPlayer($player)?->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "add", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				yield from DataManager::getInstance()->getDataSystem()->updateOffline($player, "add", ["economy" => $this->getId(), "amount" => $amount]);
-				return false;
+    private function processTransaction(string $action, EcoPlayer|Player|string $player, float $amount): Generator
+    {
+        $name = $player instanceof Player ? $player->getName() : $player;
 
-			}, function (bool $value) use ($resolve, $player, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de add de " . $name . " de " . $amount . " " . $this->getName() . " terminé");
-				$resolve($value);
-			},  function (Throwable $throwable) use ($reject,$player, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de add de " . $name . " de " . $amount . " " . $this->getName() . " échoué");
-				$reject($throwable);
-			});
-		});
-	}
+        Main::getInstance()->getLogger()->info("Création de la promesse de $action de $name pour $amount " . $this->getName());
 
-	/**
-	 * @return Generator <bool> online or offline receiver
-	 */
-	public function subtract(EcoPlayer|Player|string $player, float $amount) : Generator
-	{
-		$name = $player instanceof Player ? $player->getName() : $player;
-		Main::getInstance()->getLogger()->info("Creation de la promesse de substract de " . $name . " pour " . $amount . " " . $this->getName());
-		return Await::promise(function ($resolve, $reject) use ($player, $amount, $name) {
-			if (is_infinite($amount)){
-				$reject(new InfiniteValueException("Infinite Value"));
-				return;
-			}
-			Await::f2c(function () use ($player, $amount, $name) {
-				if (is_string($player)) {
-					$player = Server::getInstance()->getPlayerExact($player) ?? $player;
-				}
-				if ($player instanceof EcoPlayer){
-					$player->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "subtract", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				if ($player instanceof Player) {
-					EcoPlayerManager::getInstance()->getEcoPlayer($player)?->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "subtract", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				yield from DataManager::getInstance()->getDataSystem()->updateOffline($player, "subtract", ["economy" => $this->getId(), "amount" => $amount]);
-				return false;
-			}, function (bool $value) use ($resolve, $player, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de subtract de " . $name . " pour " . $amount . " " . $this->getName() . " terminé");
-				$resolve($value);
-			},  function (Throwable $throwable) use ($reject,$player, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de subtract de " . $name . " pour " . $amount . " " . $this->getName() . " échoué");
-				$reject($throwable);
-			});
-		});
-	}
+        return Await::promise(function ($resolve, $reject) use ($player, $amount, $name, $action): void {
+            if (is_infinite($amount)) {
+                $reject(new InfiniteValueException("Infinite Value"));
+                return;
+            }
 
-	/**
-	 * @return Generator <bool> online or offline receiver
-	 */
-	public function set(EcoPlayer|Player|string $player, float $amount) : Generator
-	{
-		$name = $player instanceof Player ? $player->getName() : $player;
-		Main::getInstance()->getLogger()->info("Creation de la promesse de set de " . $name . " pour " . $amount . " " . $this->getName());
-	return Await::promise(function ($resolve, $reject) use ($player, $amount, $name) {
-		if (is_infinite($amount)){
-			$reject(new InfiniteValueException("Infinite Value"));
-			return;
-		}
-			Await::f2c(function () use ($player, $amount, $name) {
-				if (is_string($player)) {
-					$player = Server::getInstance()->getPlayerExact($player) ?? $player;
-				}
-				if ($player instanceof EcoPlayer){
-					$player->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($name, "set", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				if ($player instanceof Player) {
-					EcoPlayerManager::getInstance()->getEcoPlayer($player)?->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($name, "set", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				yield from DataManager::getInstance()->getDataSystem()->updateOffline($name, "set", ["economy" => $this->getId(), "amount" => $amount]);
-				return false;
-			}, function (bool $value) use ($resolve, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de set de " . $name . " pour " . $amount . " " . $this->getName() . " terminé");
-				$resolve($value);
-			},  function (Throwable $throwable) use ($reject,$amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de set de " . $name . " pour " . $amount . " " . $this->getName() . " échoué");
-				$reject($throwable);
-			});
-		});
-	}
+            Await::f2c(function () use ($player, $amount, $action, $name) {
+                if (is_string($player)) {
+                    $player = Server::getInstance()->getPlayerExact($player) ?? $player;
+                }
 
-	/**
-	 * @return Generator <bool> online or offline
-	 */
-	public function multiply(EcoPlayer|Player|string $player, float $amount) : Generator
-	{
-		$name = $player instanceof Player ? $player->getName() : $player;
-		Main::getInstance()->getLogger()->info("Creation de la promesse de multiply de " . $name . " de " . $amount . " " . $this->getName());
-		return Await::promise(function ($resolve, $reject) use ($player, $amount, $name) : void {
-			if (is_infinite($amount)){
-				$reject(new InfiniteValueException("Infinite Value"));
-				return;
-			}
-			Await::f2c(function () use ($player, $amount, $name) {
-				if (is_string($player)) {
-					$player = Server::getInstance()->getPlayerExact($player) ?? $player;
-				}
-				if ($player instanceof EcoPlayer) {
-					$player->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "multiply", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				if ($player instanceof Player) {
-					EcoPlayerManager::getInstance()->getEcoPlayer($player)?->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "multiply", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				yield from DataManager::getInstance()->getDataSystem()->updateOffline($player, "multiply", ["economy" => $this->getId(), "amount" => $amount]);
-				return false;
+                $data = ["economy" => $this->getId(), "amount" => $amount];
 
-			}, function (bool $value) use ($resolve, $player, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de multiply de " . $name . " de " . $amount . " " . $this->getName() . " terminé");
-				$resolve($value);
-			},  function (Throwable $throwable) use ($reject,$player, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de multiply de " . $name . " de " . $amount . " " . $this->getName() . " échoué");
-				$reject($throwable);
-			});
-		});
-	}
+                if ($player instanceof EcoPlayer) {
+                    match ($action) {
+                        "add" => $player->addEconomy($this->getId(), $amount),
+                        "subtract" => $player->subtractEconomy($this->getId(), $amount),
+                        "set" => $player->setEconomy($this->getId(), $amount),
+                        "multiply" => $player->multiplyEconomy($this->getId(), $amount),
+                        "divide" => $player->divideEconomy($this->getId(), $amount),
+                        default => null
+                    };
+                    $result = yield from Main::getInstance()->getDataManager()->getDataSystem()->updateOnline($player->getName(), $action, $data);
+                    $player->setEconomy($this->getId(), $result);
+                    return true;
+                }
 
-	/**
-	 * @param Player|string $player
-	 * @return Generator <bool> online or offline
-	 */
-	public function division(EcoPlayer|Player|string $player, float $amount) : Generator
-	{
-		$name = $player instanceof Player ? $player->getName() : $player;
-		Main::getInstance()->getLogger()->info("Creation de la promesse de division de " . $name . " de " . $amount . " " . $this->getName());
-		return Await::promise(function ($resolve, $reject) use ($player, $amount, $name) : void {
-			if (is_infinite($amount)){
-				$reject(new InfiniteValueException("Infinite Value"));
-				return;
-			}
-			Await::f2c(function () use ($player, $amount, $name) {
-				if (is_string($player)) {
-					$player = Server::getInstance()->getPlayerExact($player) ?? $player;
-				}
-				if ($player instanceof EcoPlayer) {
-					$player->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "division", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				if ($player instanceof Player) {
-					EcoPlayerManager::getInstance()->getEcoPlayer($player)?->setEconomy($this->getId(), yield from DataManager::getInstance()->getDataSystem()->updateOnline($player->getName(), "division", ["economy" => $this->getId(), "amount" => $amount]));
-					return true;
-				}
-				yield from DataManager::getInstance()->getDataSystem()->updateOffline($player, "division", ["economy" => $this->getId(), "amount" => $amount]);
-				return false;
+                if ($player instanceof Player) {
+                    $ecoPlayer = EcoPlayerManager::getInstance()->getEcoPlayer($player);
+                    if ($ecoPlayer !== null) {
+                        match ($action) {
+                            "add" => $ecoPlayer->addEconomy($this->getId(), $amount),
+                            "subtract" => $ecoPlayer->subtractEconomy($this->getId(), $amount),
+                            "set" => $ecoPlayer->setEconomy($this->getId(), $amount),
+                            "multiply" => $ecoPlayer->multiplyEconomy($this->getId(), $amount),
+                            "divide" => $ecoPlayer->divideEconomy($this->getId(), $amount),
+                            default => null
+                        };
+                        $result = yield from Main::getInstance()->getDataManager()->getDataSystem()->updateOnline($player->getName(), $action, $data);
+                        $ecoPlayer->setEconomy($this->getId(), $result);
+                        return true;
+                    }
+                }
 
-			}, function (bool $value) use ($resolve, $player, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de division de " . $name . " de " . $amount . " " . $this->getName() . " terminé");
-				$resolve($value);
-			},  function (Throwable $throwable) use ($reject,$player, $amount, $name) {
-				Main::getInstance()->getLogger()->info("Promesse de division de " . $name . " de " . $amount . " " . $this->getName() . " échoué");
-				$reject($throwable);
-			});
-		});
-	}
+                yield from Main::getInstance()->getDataManager()->getDataSystem()->updateOffline($name, $action, $data);
+                return false;
+
+            }, function (bool $value) use ($resolve, $name, $amount, $action) {
+                Main::getInstance()->getLogger()->info("Promesse de $action de $name pour $amount " . $this->getName() . " terminé");
+                $resolve($value);
+            }, function (Throwable $throwable) use ($reject, $name, $amount, $action) {
+                Main::getInstance()->getLogger()->info("Promesse de $action de $name pour $amount " . $this->getName() . " échoué");
+                $reject($throwable);
+            });
+        });
+    }
+
+    /**
+     * @param EcoPlayer|Player|string $player
+     * @param float $amount
+     * @return Generator
+     */
+    public function add(EcoPlayer|Player|string $player, float $amount): Generator
+    {
+        return $this->processTransaction("add", $player, $amount);
+    }
+
+    /**
+     * @param EcoPlayer|Player|string $player
+     * @param float $amount
+     * @return Generator
+     */
+    public function subtract(EcoPlayer|Player|string $player, float $amount): Generator
+    {
+        return $this->processTransaction("subtract", $player, $amount);
+    }
+
+    /**
+     * @param EcoPlayer|Player|string $player
+     * @param float $amount
+     * @return Generator
+     */
+    public function set(EcoPlayer|Player|string $player, float $amount): Generator
+    {
+        return $this->processTransaction("set", $player, $amount);
+    }
+
+    /**
+     * @param EcoPlayer|Player|string $player
+     * @param float $amount
+     * @return Generator
+     */
+    public function multiply(EcoPlayer|Player|string $player, float $amount): Generator
+    {
+        return $this->processTransaction("multiply", $player, $amount);
+    }
+
+    /**
+     * @param EcoPlayer|Player|string $player
+     * @param float $amount
+     * @return Generator
+     */
+    public function division(EcoPlayer|Player|string $player, float $amount): Generator
+    {
+        return $this->processTransaction("division", $player, $amount);
+    }
 
 	/**
 	 * @return Generator <bool> online or offline
@@ -263,7 +194,7 @@ class Economy
 	public function get(Player|string $player, bool $cache = true) : Generator
 	{
 		return Await::promise(function ($resolve, $reject) use ($cache, $player) : void{
-			$data = DataManager::getInstance()->getDataSystem();
+			$data = Main::getInstance()->getDataManager()->getDataSystem();
 			if ($data === null){
 				$resolve($this->getDefault());
 				return;
@@ -286,7 +217,7 @@ class Economy
 				if (is_string($receiver)) {
 					$receiver = Server::getInstance()->getPlayerExact($receiver) ?? $receiver;
 				}
-				$data = yield from DataManager::getInstance()->getDataSystem()->createPromiseUpdate(is_string($sender) ? $sender : $sender->getName(), "pay", ["economy" => $this->getId(), "amount" => $amount, "default" => $this->getDefault(), "receiver" => is_string($receiver) ? $receiver : $receiver->getName()]);
+				$data = yield from Main::getInstance()->getDataManager()->getDataSystem()->createPromiseUpdate(is_string($sender) ? $sender : $sender->getName(), "pay", ["economy" => $this->getId(), "amount" => $amount, "default" => $this->getDefault(), "receiver" => is_string($receiver) ? $receiver : $receiver->getName()]);
 				if ($sender instanceof Player)
 					EcoPlayerManager::getInstance()->getEcoPlayer($sender)->setEconomy($this->getId(), $data["sender"]);
 				if ($receiver instanceof Player)

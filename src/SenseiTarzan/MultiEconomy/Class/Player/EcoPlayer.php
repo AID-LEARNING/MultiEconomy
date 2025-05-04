@@ -25,6 +25,7 @@ namespace SenseiTarzan\MultiEconomy\Class\Player;
 
 use JsonSerializable;
 use pocketmine\player\Player;
+use pocketmine\utils\Limits;
 use SenseiTarzan\MultiEconomy\Events\EcolPlayerLoadedEvent;
 use SenseiTarzan\MultiEconomy\Events\EconomyChangeDataEvent;
 use function strtolower;
@@ -77,6 +78,32 @@ class EcoPlayer implements JsonSerializable
 			$event->call();
 		}
 	}
+    public function addEconomy(string $id,float $amount) : void
+    {
+        if ($this->economy[$id] >= PHP_FLOAT_MAX) {
+            return;
+        }
+        $this->economy[$id] += $amount;
+    }
+
+    public function subtractEconomy(string $id, float $amount) : void {
+        $this->economy[$id] -= $amount;
+    }
+
+    public function multiplyEconomy(string $id, float $amount) : void
+    {
+        if ($this->economy[$id] >= PHP_FLOAT_MAX) {
+            return;
+        }
+        $this->economy[$id] *= $amount;
+    }
+
+    public function divideEconomy(string $id, float $amount) : void {
+        if($amount === 0.0) {
+            return;
+        }
+        $this->economy[$id] /= $amount;
+    }
 
 	public function existsEconomy(string $id) : bool
 	{

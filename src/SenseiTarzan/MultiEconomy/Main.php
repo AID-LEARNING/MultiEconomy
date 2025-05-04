@@ -48,6 +48,7 @@ class Main extends PluginBase
 {
 
 	use SingletonTrait;
+    private DataManager $dataManager;
 
 	protected function onLoad() : void
 	{
@@ -57,7 +58,8 @@ class Main extends PluginBase
 				@$this->saveResource(str_replace($search, "", $file));
 			}
 		}
-		DataManager::getInstance()->setDataSystem(match (mb_strtolower($this->getConfig()->get("data-type", "yml"))) {
+        $this->dataManager = new DataManager();
+        $this->dataManager->setDataSystem(match (mb_strtolower($this->getConfig()->get("data-type", "yml"))) {
 			"yml", "yaml" => new YAMLSave($this),
 			"json" => new JSONSave($this),
 			default => null
@@ -80,4 +82,12 @@ class Main extends PluginBase
 		}
 		LanguageManager::getInstance()->loadCommands("economy");
 	}
+
+    /**
+     * @return DataManager
+     */
+    public function getDataManager(): DataManager
+    {
+        return $this->dataManager;
+    }
 }

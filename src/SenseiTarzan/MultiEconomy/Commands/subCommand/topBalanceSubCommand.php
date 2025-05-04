@@ -52,7 +52,7 @@ class topBalanceSubCommand extends BaseSubCommand
 		$parent = $this->getParent();
 		$economy = $parent->getSymbole();
 		$id = $parent->getName();
-		Await::g2c(DataManager::getInstance()->getDataSystem()->createPromiseTop($id, 10), function (ThreadSafeArray $result) use ($sender, $id, $economy) {
+		Await::g2c(Main::getInstance()->getDataManager()->getDataSystem()->createPromiseTop($id, 10), function (ThreadSafeArray $result) use ($sender, $id, $economy) {
 			$index = 0;
 			$text = LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::header_economy_top(10, MultiEconomyManager::getInstance()->getEconomy($id)->getName())) . "\n";
 			foreach (Format::threadSafeArrayToArray($result) as $name => $amounts) {

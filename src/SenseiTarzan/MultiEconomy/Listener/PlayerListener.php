@@ -29,6 +29,7 @@ use pocketmine\event\player\PlayerQuitEvent;
 use SenseiTarzan\DataBase\Component\DataManager;
 use SenseiTarzan\ExtraEvent\Class\EventAttribute;
 use SenseiTarzan\MultiEconomy\Component\EcoPlayerManager;
+use SenseiTarzan\MultiEconomy\Main;
 
 final class PlayerListener
 {
@@ -40,7 +41,7 @@ final class PlayerListener
 	public function onJoin(PlayerJoinEvent $event) : void
 	{
 		if (!$this->hasMiddleware)
-			DataManager::getInstance()->getDataSystem()->loadDataPlayer($event->getPlayer());
+			Main::getInstance()->getDataManager()->getDataSystem()->loadDataPlayer($event->getPlayer());
 	}
 
 	#[EventAttribute(EventPriority::LOW)]
