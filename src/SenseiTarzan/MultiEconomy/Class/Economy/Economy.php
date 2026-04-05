@@ -35,6 +35,7 @@ use SOFe\AwaitGenerator\Await;
 use Throwable;
 use function is_infinite;
 use function is_string;
+use function round;
 use function strtolower;
 
 class Economy
@@ -42,9 +43,17 @@ class Economy
 
 	private readonly string $id;
 
-	public function __construct(private readonly string $name, private readonly string $symbol, private readonly float $default, private readonly bool $enablePay = true)
+	private readonly int $default;
+
+	public function __construct(private readonly string $name,
+								private readonly string $symbol,
+								float $default,
+								private readonly int $centToUnit = 100,
+								private readonly bool $enablePay = true
+	)
 	{
 		$this->id = strtolower($name);
+		$this->default = $this->convertToCent($default);
 	}
 
 	public function getId() : string
@@ -57,7 +66,7 @@ class Economy
 		return $this->name;
 	}
 
-	public function getDefault() : float
+	public function getDefault() : int
 	{
 		return $this->default;
 	}
@@ -65,6 +74,21 @@ class Economy
 	public function getSymbol() : string
 	{
 		return $this->symbol;
+	}
+
+	public function getCentToUnit() : int
+	{
+		return $this->centToUnit;
+	}
+
+	public function convertToCent(float $amount) : int
+	{
+		return (int) round($amount * $this->centToUnit);
+	}
+
+	public function centToUnit(int $amount) : float
+	{
+		return round($amount / $this->centToUnit, 2);
 	}
 
 	public function isEnablePay() : bool
@@ -77,7 +101,7 @@ class Economy
 		$name = $player instanceof Player ? $player->getName() : $player;
 
 		Main::getInstance()->getLogger()->info("Création de la promesse de $action de $name pour $amount " . $this->getName());
-
+		$amount = $this->convertToCent($amount);
 		return Await::promise(function ($resolve, $reject) use ($player, $amount, $name, $action) : void {
 			if (is_infinite($amount)) {
 				$reject(new InfiniteValueException("Infinite Value"));

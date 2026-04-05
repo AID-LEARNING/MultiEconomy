@@ -41,13 +41,14 @@ class topBalanceSubCommand extends EcoBaseSubCommand
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void
 	{
-		$economy = $this->economy->getSymbol();
+		$symbol = $this->economy->getSymbol();
 		$id = $this->economy->getName();
-		Await::g2c(Main::getInstance()->getDataManager()->getDataSystem()->createPromiseTop($id, 10), function (ThreadSafeArray $result) use ($sender, $id, $economy) {
+		$converter = $this->economy->centToUnit(...);
+		Await::g2c(Main::getInstance()->getDataManager()->getDataSystem()->createPromiseTop($id, 10), function (ThreadSafeArray $result) use ($sender, $id, $symbol, $converter) {
 			$index = 0;
 			$text = Main::getInstance()->getLanguageManager()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::header_economy_top(10, $this->economy->getName())) . "\n";
 			foreach (Format::threadSafeArrayToArray($result) as $name => $amounts) {
-				$text .= Main::getInstance()->getLanguageManager()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::body_economy_top(++$index, $name, $amounts, $economy)) . "\n";
+				$text .= Main::getInstance()->getLanguageManager()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::body_economy_top(++$index, $name, $converter($amounts), $symbol)) . "\n";
 			}
 			$sender->sendMessage($text);
 		}, function (Throwable $exception) {

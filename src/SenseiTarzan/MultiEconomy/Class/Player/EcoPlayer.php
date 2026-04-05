@@ -25,16 +25,20 @@ namespace SenseiTarzan\MultiEconomy\Class\Player;
 
 use JsonSerializable;
 use pocketmine\player\Player;
+use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
 use SenseiTarzan\MultiEconomy\Events\EcolPlayerLoadedEvent;
 use SenseiTarzan\MultiEconomy\Events\EconomyChangeDataEvent;
 use function strtolower;
-use const PHP_FLOAT_MAX;
+use const PHP_INT_MAX;
 
 class EcoPlayer implements JsonSerializable
 {
 
 	private string $id;
 
+	/**
+	 * @param int[] $economy Array of economy id and amount in cents
+	 */
 	public function __construct(private readonly Player $player, private array $economy)
 	{
 		$this->id = strtolower($this->player->getName());
@@ -59,7 +63,13 @@ class EcoPlayer implements JsonSerializable
 	 */
 	public function getEconomy(string $id) : float
 	{
-		return $this->economy[$id] ?? 0.0;
+		$economy = MultiEconomyManager::getInstance()->getEconomy($id);
+		return $economy->centToUnit($this->economy[$id] ?? 0);
+	}
+
+	public function getEconomyInCent(string $id) : int
+	{
+		return$this->economy[$id] ?? 0;
 	}
 
 	/**
@@ -70,6 +80,9 @@ class EcoPlayer implements JsonSerializable
 		return $this->economy;
 	}
 
+	/**
+	 * @internal Set economy amount in cents
+	 */
 	public function setEconomy(string $id, float $amount) : void
 	{
 		$this->economy[$id] = $amount;
@@ -78,28 +91,41 @@ class EcoPlayer implements JsonSerializable
 			$event->call();
 		}
 	}
+
+	/**
+	 * @internal Add economy amount in cents
+	 */
 	public function addEconomy(string $id,float $amount) : void
 	{
-		if ($this->economy[$id] >= PHP_FLOAT_MAX) {
+		if ($this->economy[$id] >= PHP_INT_MAX) {
 			return;
 		}
 		$this->economy[$id] += $amount;
 	}
 
+	/**
+	 * @internal Subtract economy amount in cents
+	 */
 	public function subtractEconomy(string $id, float $amount) : void {
 		$this->economy[$id] -= $amount;
 	}
 
+	/**
+	 * @internal Multiply economy amount in cents
+	 */
 	public function multiplyEconomy(string $id, float $amount) : void
 	{
-		if ($this->economy[$id] >= PHP_FLOAT_MAX) {
+		if ($this->economy[$id] >= PHP_INT_MAX) {
 			return;
 		}
 		$this->economy[$id] *= $amount;
 	}
 
+	/**
+	 * @internal Divide economy amount in cents
+	 */
 	public function divideEconomy(string $id, float $amount) : void {
-		if($amount === 0.0) {
+		if($amount === 0) {
 			return;
 		}
 		$this->economy[$id] /= $amount;
