@@ -24,19 +24,16 @@ declare(strict_types=1);
 namespace SenseiTarzan\MultiEconomy\Commands\subCommand;
 
 use CortexPE\Commando\args\FloatArgument;
-use CortexPE\Commando\BaseSubCommand;
 use pocketmine\command\CommandSender;
-use SenseiTarzan\LanguageSystem\Component\LanguageManager;
 use SenseiTarzan\MultiEconomy\Class\Exception\EconomyUpdateException;
 use SenseiTarzan\MultiEconomy\Class\Exception\InfiniteValueException;
 use SenseiTarzan\MultiEconomy\Commands\args\PlayerArgument;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
-use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
 use SenseiTarzan\MultiEconomy\Main;
 use SenseiTarzan\MultiEconomy\Utils\CustomKnownTranslationFactory;
 use SOFe\AwaitGenerator\Await;
 
-class setBalanceSubCommand extends BaseSubCommand
+class setBalanceSubCommand extends EcoBaseSubCommand
 {
 
 	protected function prepare() : void
@@ -51,16 +48,14 @@ class setBalanceSubCommand extends BaseSubCommand
 		/**
 		 * @var EconomyCommand $parent
 		 */
-		$parent = $this->getParent();
 		$player = $args["player"];
 		$amount = $args["amount"];
-		$economy = $parent->getSymbole();
-		$id = $parent->getName();
-		Await::g2c(MultiEconomyManager::getInstance()->getEconomy($id)->set($player, $amount),
+		$economy = $this->economy->getSymbol();
+		Await::g2c($this->economy->set($player, $amount),
 			function (bool $online) use ($player, $amount, $economy, $sender) {
-				$sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::set_economy_sender($player, $economy, $amount)));
+				$sender->sendMessage(Main::getInstance()->getLanguageManager()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::set_economy_sender($player, $economy, $amount)));
 				if (!$online) return;
-				$player->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($player, CustomKnownTranslationFactory::set_economy_receiver($economy, $amount)));
+				$player->sendMessage(Main::getInstance()->getLanguageManager()->getTranslateWithTranslatable($player, CustomKnownTranslationFactory::set_economy_receiver($economy, $amount)));
 			}, [
 				EconomyUpdateException::class => function (EconomyUpdateException $exception) use ($sender) {
 					Main::getInstance()->getLogger()->logException($exception);

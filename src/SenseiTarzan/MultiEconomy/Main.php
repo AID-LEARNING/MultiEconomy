@@ -35,6 +35,10 @@ use SenseiTarzan\MultiEconomy\Class\Middleware\EcoMiddleWare;
 use SenseiTarzan\MultiEconomy\Class\Save\JSONSave;
 use SenseiTarzan\MultiEconomy\Class\Save\YAMLSave;
 use SenseiTarzan\MultiEconomy\Commands\EconomyCommand;
+use SenseiTarzan\MultiEconomy\Commands\subCommand\addBalanceSubCommand;
+use SenseiTarzan\MultiEconomy\Commands\subCommand\setBalanceSubCommand;
+use SenseiTarzan\MultiEconomy\Commands\subCommand\subtractBalanceSubCommand;
+use SenseiTarzan\MultiEconomy\Commands\subCommand\topBalanceSubCommand;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
 use SenseiTarzan\MultiEconomy\Listener\PlayerListener;
 use SenseiTarzan\Path\PathScanner;
@@ -48,7 +52,9 @@ class Main extends PluginBase
 {
 
 	use SingletonTrait;
-    private DataManager $dataManager;
+	private DataManager $dataManager;
+
+	private LanguageManager $languageManager;
 
 	protected function onLoad() : void
 	{
@@ -58,14 +64,14 @@ class Main extends PluginBase
 				@$this->saveResource(str_replace($search, "", $file));
 			}
 		}
-        $this->dataManager = new DataManager();
-        $this->dataManager->setDataSystem(match (mb_strtolower($this->getConfig()->get("data-type", "yml"))) {
+		$this->dataManager = new DataManager();
+		$this->dataManager->setDataSystem(match (mb_strtolower($this->getConfig()->get("data-type", "yml"))) {
 			"yml", "yaml" => new YAMLSave($this),
 			"json" => new JSONSave($this),
 			default => null
 		});
 		new MultiEconomyManager($this);
-		new LanguageManager($this);
+		$this->languageManager = new LanguageManager($this);
 	}
 
 	public function onEnable() : void
@@ -77,17 +83,26 @@ class Main extends PluginBase
 		if ($hasMiddleware)
 			MiddlewareManager::getInstance()->addMiddleware(new EcoMiddleWare());
 		EventLoader::loadEventWithClass($this, new PlayerListener($hasMiddleware));
+		$legacyModeCommand = $this->getConfig()->get("legacy-mode-command", false);
 		foreach (MultiEconomyManager::getInstance()->getEconomyList() as $economy) {
-			$this->getServer()->getCommandMap()->register("multieconomy", new EconomyCommand($this, $economy->getId(), $economy->getSymbol(), "{$economy->getName()} command"));
+			$this->getServer()->getCommandMap()->register("multieconomy", new EconomyCommand($this, $economy->getId(), $economy, "{$economy->getName()} command"));
+			if($legacyModeCommand) {
+				$this->getServer()->getCommandMap()->register("multieconomy", new addBalanceSubCommand($this, "add{$economy->getName()}", $economy, "Ajouter de l'argent à un joueur en {$economy->getName()}"));
+				$this->getServer()->getCommandMap()->register("multieconomy", new subtractBalanceSubCommand($this, "subtract{$economy->getName()}", $economy, "Soustraire de l'argent à un joueur en {$economy->getName()}", ["sub{$economy->getName()}", "remove{$economy->getName()}"]));
+				$this->getServer()->getCommandMap()->register("multieconomy", new setBalanceSubCommand($this, "set{$economy->getName()}", $economy, "Définir le solde d'un joueur en {$economy->getName()}"));
+				$this->getServer()->getCommandMap()->register("multieconomy", new topBalanceSubCommand($this, "top{$economy->getName()}", $economy, "Afficher le top des joueurs en {$economy->getName()}"));
+			}
 		}
-		LanguageManager::getInstance()->loadCommands("economy");
+		$this->languageManager->loadCommands("economy");
 	}
 
-    /**
-     * @return DataManager
-     */
-    public function getDataManager(): DataManager
-    {
-        return $this->dataManager;
-    }
+	public function getDataManager() : DataManager
+	{
+		return $this->dataManager;
+	}
+
+	public function getLanguageManager() : LanguageManager
+	{
+		return $this->languageManager;
+	}
 }

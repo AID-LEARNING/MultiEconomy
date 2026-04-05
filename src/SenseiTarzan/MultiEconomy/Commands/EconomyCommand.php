@@ -27,7 +27,7 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
-use SenseiTarzan\LanguageSystem\Component\LanguageManager;
+use SenseiTarzan\MultiEconomy\Class\Economy\Economy;
 use SenseiTarzan\MultiEconomy\Commands\args\PlayerArgument;
 use SenseiTarzan\MultiEconomy\Commands\subCommand\addBalanceSubCommand;
 use SenseiTarzan\MultiEconomy\Commands\subCommand\payBalanceSubCommand;
@@ -35,20 +35,21 @@ use SenseiTarzan\MultiEconomy\Commands\subCommand\setBalanceSubCommand;
 use SenseiTarzan\MultiEconomy\Commands\subCommand\subtractBalanceSubCommand;
 use SenseiTarzan\MultiEconomy\Commands\subCommand\topBalanceSubCommand;
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
+use SenseiTarzan\MultiEconomy\Main;
 use SenseiTarzan\MultiEconomy\Utils\CustomKnownTranslationFactory;
 use SOFe\AwaitGenerator\Await;
 
 class EconomyCommand extends BaseCommand
 {
 
-	public function __construct(PluginBase $plugin, string $name, private readonly string $symbole, string $description = "", array $aliases = [])
+	public function __construct(PluginBase $plugin, string $name, private readonly Economy $economy, string $description = "", array $aliases = [])
 	{
 		parent::__construct($plugin, $name, $description, $aliases);
 	}
 
 	public function getSymbole() : string
 	{
-		return $this->symbole;
+		return $this->economy->getSymbol();
 	}
 
 	/**
@@ -58,25 +59,27 @@ class EconomyCommand extends BaseCommand
 	{
 		$this->setPermission("multieconomy.command");
 		$this->addConstraint(new InGameRequiredConstraint($this));
-        $this->registerArgument(0, new PlayerArgument(true, "player"));
-		$this->registerSubCommand(new payBalanceSubCommand($this->getOwningPlugin(), "pay", "Payer un joueur", ["send", "donate"]));
-		$this->registerSubCommand(new addBalanceSubCommand($this->getOwningPlugin(), "add", "Ajouter de l'argent à un joueur"));
-		$this->registerSubCommand(new subtractBalanceSubCommand($this->getOwningPlugin(), "subtract", "Soustraire de l'argent à un joueur", ["sub", "remove"]));
-		$this->registerSubCommand(new setBalanceSubCommand($this->getOwningPlugin(), "set", "Définir le solde d'un joueur"));
-		$this->registerSubCommand(new topBalanceSubCommand($this->getOwningPlugin(), "top", "Afficher le top des joueurs"));
+		$this->registerArgument(0, new PlayerArgument(true, "player"));
+		if($this->economy->isEnablePay()) {
+			$this->registerSubCommand(new payBalanceSubCommand($this->getOwningPlugin(), "pay", $this->economy, "Payer un joueur", ["send", "donate"]));
+		}
+		$this->registerSubCommand(new addBalanceSubCommand($this->getOwningPlugin(), "add", $this->economy, "Ajouter de l'argent à un joueur"));
+		$this->registerSubCommand(new subtractBalanceSubCommand($this->getOwningPlugin(), "subtract", $this->economy, "Soustraire de l'argent à un joueur", ["sub", "remove"]));
+		$this->registerSubCommand(new setBalanceSubCommand($this->getOwningPlugin(), "set", $this->economy, "Définir le solde d'un joueur"));
+		$this->registerSubCommand(new topBalanceSubCommand($this->getOwningPlugin(), "top", $this->economy, "Afficher le top des joueurs"));
 
 	}
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void
 	{
-        if (empty($args)) {
-            Await::g2c(MultiEconomyManager::getInstance()->getEconomy($this->getName())->get($sender), function (float $balance) use ($sender) {
-                $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::balance_economy_sender($this->getSymbole(), $balance)));
-            });
-        }else if($sender->hasPermission("multieconomy.command.see")){
-            Await::g2c(MultiEconomyManager::getInstance()->getEconomy($this->getName())->get($args["player"]), function (float $balance) use ($sender) {
-                $sender->sendMessage(LanguageManager::getInstance()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::balance_economy_sender($this->getSymbole(), $balance)));
-            });
-        }
+		if (empty($args)) {
+			Await::g2c(MultiEconomyManager::getInstance()->getEconomy($this->getName())->get($sender), function (float $balance) use ($sender) {
+				$sender->sendMessage(Main::getInstance()->getLanguageManager()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::balance_economy_sender($this->getSymbole(), $balance)));
+			});
+		}elseif($sender->hasPermission("multieconomy.command.see")){
+			Await::g2c(MultiEconomyManager::getInstance()->getEconomy($this->getName())->get($args["player"]), function (float $balance) use ($sender) {
+				$sender->sendMessage(Main::getInstance()->getLanguageManager()->getTranslateWithTranslatable($sender, CustomKnownTranslationFactory::balance_economy_sender($this->getSymbole(), $balance)));
+			});
+		}
 	}
 }

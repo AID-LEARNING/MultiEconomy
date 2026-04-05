@@ -26,7 +26,6 @@ namespace SenseiTarzan\MultiEconomy\Listener;
 use pocketmine\event\EventPriority;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use SenseiTarzan\DataBase\Component\DataManager;
 use SenseiTarzan\ExtraEvent\Class\EventAttribute;
 use SenseiTarzan\MultiEconomy\Component\EcoPlayerManager;
 use SenseiTarzan\MultiEconomy\Main;

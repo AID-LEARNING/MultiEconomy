@@ -1,150 +1,145 @@
+# MultiEconomy - Documentation (Français)
 
-## Français
-Configuration de la ``plugin_data/RoleManager/config.yml``
+## Sommaire
+- [Vue d'ensemble](#vue-densemble)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Economies](#economies)
+- [Commandes](#commandes)
+- [Permissions](#permissions)
+- [API developpeur](#api-developpeur)
+- [Evenements](#evenements)
+- [Notes techniques](#notes-techniques)
+- [Depannage](#depannage)
+- [FAQ](#faq)
 
-| Clé       | Description                                                   | valuer attendu                                                                                       |
-|-----------|---------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-| data-type | Permet de définir le system de donnée de sauvegarde du joueur | ``json`` is default <br/>  ``yaml``  <br/> ``yml``<br/> ``custom``  pour les personnes experimenters |
+## Vue d'ensemble
+MultiEconomy est un plugin PocketMine-MP qui permet de gerer plusieurs monnaies sur un meme serveur.
 
-# Creation d'une économie
+Cette documentation couvre:
+- l'installation
+- la configuration
+- les permissions
+- l'utilisation des commandes
+- l'integration developpeur (API + evenements)
 
-| Clé     | Description                                | type attendu   | obligatoire          |
-|---------|--------------------------------------------|----------------|----------------------|
-| name    | Le nom de la monnaie a créer               | texte          | **oui**              |
-| default | l'argent donner a la creation de ça bourse | nombre decimal | **non** 0 par défaut |
-| symbol  | le symbole de la monnaie.                  | texte          | **non** $ par défaut |
-Votre fichier doit être dans ``plugin_data/MultiEconomy/Economy`` car sinon les économies ne seront pas initialiser
-et vous devais faire vos économies en .yml
+## Installation
+1. Placez le plugin dans le dossier `plugins/`.
+2. Demarrez le serveur une premiere fois.
+3. Verifiez que les fichiers suivants sont disponibles:
+   - `resources/config.yml`
+   - `resources/Economy/Money.yml`
+4. Redemarrez le serveur apres toute modification de configuration.
+
+## Configuration
+Fichier: `resources/config.yml`
 
 ```yaml
 ---
-name: Livre Starling
-default: 0
-symbol: £
+data-type: json
+legacy-mode-command: false
 ...
 ```
 
-# Creation de votre propre system de sauvegarde de données du joueur
-### [⚠️⚠️] Ceci est un exemple, je ne cherche pas l'optimisation, mais montre comment utiliser et vous devez entre experimenter pour le faire
+- `data-type`: backend de stockage (`json`, `yaml`, `yml`, `custom`)
+- `legacy-mode-command`: active la compatibilite des anciennes syntaxes de commande
 
-[https://github.com/AID-LEARNING/MultiEconomySQL](Exemple en sql)
+## Economies
+Les economies sont chargees depuis `resources/Economy/` (exemple: `Money.yml`).
 
-# Récupérer l'Economy par rapport à l'id
+Champs courants:
+- `name`: identifiant/nom de la monnaie
+- `default`: solde initial
+- `symbol`: symbole d'affichage
 
-````php
+## Commandes
+Commande principale:
+- `src/SenseiTarzan/MultiEconomy/Commands/EconomyCommand.php`
+
+Sous-commandes:
+- `src/SenseiTarzan/MultiEconomy/Commands/subCommand/AddBalanceSubCommand.php`
+- `src/SenseiTarzan/MultiEconomy/Commands/subCommand/SubtractBalanceSubCommand.php`
+- `src/SenseiTarzan/MultiEconomy/Commands/subCommand/SetBalanceSubCommand.php`
+- `src/SenseiTarzan/MultiEconomy/Commands/subCommand/PayBalanceSubCommand.php`
+- `src/SenseiTarzan/MultiEconomy/Commands/subCommand/TopBalanceSubCommand.php`
+
+Utilisez `/help` en jeu pour la syntaxe exacte de votre version.
+
+## Permissions
+Source: `plugin.yml`
+
+| Permission | Defaut | Description |
+|---|---|---|
+| `multieconomy.command` | `true` | Acces a la commande principale |
+| `multieconomy.command.see` | `op` | Voir le solde d'un joueur cible |
+| `multieconomy.command.add` | `op` | Ajouter un montant |
+| `multieconomy.command.subtract` | `op` | Retirer un montant |
+| `multieconomy.command.set` | `op` | Definir un solde |
+| `multieconomy.command.pay` | `true` | Payer un autre joueur |
+| `multieconomy.command.top` | `true` | Voir le classement |
+
+## API developpeur
+Classes centrales:
+- `src/SenseiTarzan/MultiEconomy/Component/MultiEconomyManager.php`
+- `src/SenseiTarzan/MultiEconomy/Component/EcoPlayerManager.php`
+- `src/SenseiTarzan/MultiEconomy/Class/Economy/Economy.php`
+- `src/SenseiTarzan/MultiEconomy/Class/Player/EcoPlayer.php`
+
+Recuperer une economie:
+```php
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
-MultiEconomyManager::getInstance()->getEconomy("nom de l'économie");
-````
 
-# Récupérer la bourse de le jouer par économie
-````php
-use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
+$economy = MultiEconomyManager::getInstance()->getEconomy("money");
+```
+
+Lire un solde (asynchrone):
+```php
 use SOFe\AwaitGenerator\Await;
-Await::g2c(MultiEconomyManager::getInstance()->getEconomy("nom de l'économie")->get(Player or string), function (float $balance) {
-    
-}, [
-    \poggit\libasynql\SqlError::class => function(){},
-    RuntimeException::class => function() {}
-]);
-````
-
-# Definir la bourse d'un joueur par économie
-````php
 use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
-use SOFe\AwaitGenerator\Await;
 
-Await::g2c(MultiEconomyManager::getInstance()->getEconomy($id)->set(player: Player or string, amount: float),
-function (bool $online/*detect si le joueur est en ligne*/) {
-    
-}, [
-    EconomyUpdateException::class => function (EconomyUpdateException $exception) {
-        
+Await::g2c(
+    MultiEconomyManager::getInstance()->getEconomy("money")->get($player),
+    function (float $balance): void {
+        // utiliser $balance
     },
-]);
-````
+    [
+        RuntimeException::class => function (): void {}
+    ]
+);
+```
 
-# Ajouter de l'argent dans la bourse d'un joueur par économie
-````php
-use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
-use SOFe\AwaitGenerator\Await;
+Exceptions metier courantes:
+- `EconomyNoHasAmountException`
+- `EconomyUpdateException`
+- `InfiniteValueException`
 
-Await::g2c(MultiEconomyManager::getInstance()->getEconomy($id)->add(player: Player or string, amount: float),
-function (bool $online/*detect si le joueur est en ligne*/) {
-    
-}, [
-    EconomyUpdateException::class => function (EconomyUpdateException $exception) {
-        
-    },
-]);
-````
+## Evenements
+Dossier: `src/SenseiTarzan/MultiEconomy/Events/`
 
-# Enlever de l'argent dans la bourse d'un joueur par économie
-````php
-use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
-use SOFe\AwaitGenerator\Await;
+- `EcolPlayerLoadedEvent`
+- `EconomyChangeDataEvent`
 
-Await::g2c(MultiEconomyManager::getInstance()->getEconomy($id)->subtract(player: Player or string, amount: float),
-function (bool $online/*detect si le joueur est en ligne*/) {
-    
-}, [
-    EconomyUpdateException::class => function (EconomyUpdateException $exception) {
-        
-    },
-]);
-````
-# Multiplie la bourse d'un joueur par économie
-````php
-use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
-use SOFe\AwaitGenerator\Await;
+Usages typiques:
+- lancer une logique quand les donnees eco d'un joueur sont chargees
+- reagir aux changements de solde
 
-Await::g2c(MultiEconomyManager::getInstance()->getEconomy($id)->multiply(player: Player or string, amount: float),
-function (bool $online/*detect si le joueur est en ligne*/) {
-    
-}, [
-    EconomyUpdateException::class => function (EconomyUpdateException $exception) {
-        
-    },
-]);
-````
-# Diviser la bourse d'un joueur par économie
-````php
-use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
-use SOFe\AwaitGenerator\Await;
+## Notes techniques
+- Listener joueur: `src/SenseiTarzan/MultiEconomy/Listener/PlayerListener.php`
+- Tache asynchrone: `src/SenseiTarzan/MultiEconomy/Task/AsyncSortTask.php`
+- Soft dependency declaree: `Middleware`
 
-Await::g2c(MultiEconomyManager::getInstance()->getEconomy($id)->division(player: Player or string, amount: float),
-function (bool $online/*detect si le joueur est en ligne*/) {
-    
-}, [
-    EconomyUpdateException::class => function (EconomyUpdateException $exception)  {
-        
-    },
-]);
-````
-# Mettre un pourcentage de la bourse d'un joueur par économie
-````php
-use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
-use SOFe\AwaitGenerator\Await;
+## Depannage
+- Verifiez les permissions si une commande est refusee.
+- Verifiez le nom/ID exact de l'economie.
+- Verifiez les logs serveur en cas d'exception.
+- En migration, testez `legacy-mode-command: true`.
 
-Await::g2c(MultiEconomyManager::getInstance()->getEconomy("nom de l'économie")->percent(player: Player or string, amount: float),
-function (bool $online/*detect si le joueur est en ligne*/) {
-    
-}, [
-    EconomyUpdateException::class => function (EconomyUpdateException $exception) {
-        
-    },
-]);
-````
-# Recuperer le top par économie
-````php
-use SenseiTarzan\MultiEconomy\Component\MultiEconomyManager;
-use SOFe\AwaitGenerator\Await;
-use SenseiTarzan\MultiEconomy\Utils\Format;
-Await::g2c(DataManager::getInstance()->getDataSystem()->createPromiseTop(economy: "nom de l'économie", limit: int),
-function (ThreadSafeArray $result) {
-    $arrayTop = Format::threadSafeArrayToArray($result);
-}, [
-    EconomyUpdateException::class => function (EconomyUpdateException $exception) {
-        
-    },
-]);
-````
+## FAQ
+**Q: Puis-je utiliser plusieurs monnaies ?**  
+Oui.
+
+**Q: Le plugin supporte-t-il l'API 5 ?**  
+Oui, `plugin.yml` declare `api: 5.0.0`.
+
+**Q: Quelles permissions donner aux joueurs ?**  
+En general: `multieconomy.command`, `multieconomy.command.pay`, `multieconomy.command.top`.

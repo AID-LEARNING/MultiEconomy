@@ -2,4 +2,5 @@
 name: Money
 default: 1000
 symbol: $
+enablePay: true
 ...

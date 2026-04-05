@@ -46,7 +46,7 @@ final class MultiEconomyManager
 				unset($info);
 				continue;
 			}
-			$this->addEconomy(new Economy($info->get("name"), $info->get("symbol", "$"), $info->get("default", 0)));
+			$this->addEconomy(new Economy($info->get("name"), $info->get("symbol", "$"), $info->get("default", 0), $info->get("enablePay", true)));
 			unset($info);
 		}
 	}

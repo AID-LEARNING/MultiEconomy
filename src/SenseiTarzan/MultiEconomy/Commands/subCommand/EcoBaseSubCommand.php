@@ -21,32 +21,17 @@
 
 declare(strict_types=1);
 
-namespace SenseiTarzan\MultiEconomy\Class\Middleware;
+namespace SenseiTarzan\MultiEconomy\Commands\subCommand;
 
-use Generator;
-use pocketmine\event\server\DataPacketReceiveEvent;
-use pocketmine\network\mcpe\protocol\SetLocalPlayerAsInitializedPacket;
-use SenseiTarzan\Middleware\Class\AttributeMiddlewarePriority;
-use SenseiTarzan\Middleware\Class\IMiddleWare;
-use SenseiTarzan\Middleware\Class\MiddlewarePriority;
-use SenseiTarzan\MultiEconomy\Main;
+use CortexPE\Commando\BaseSubCommand;
+use pocketmine\plugin\PluginBase;
+use SenseiTarzan\MultiEconomy\Class\Economy\Economy;
 
-#[AttributeMiddlewarePriority(MiddlewarePriority::MONITOR)]
-class EcoMiddleWare implements IMiddleWare
+abstract class EcoBaseSubCommand extends BaseSubCommand
 {
-
-	public function getName() : string
-	{
-		return "Eco MiddleWare";
-	}
-
-	public function onDetectPacket() : string
-	{
-		return SetLocalPlayerAsInitializedPacket::class;
-	}
-
-	public function getPromise(DataPacketReceiveEvent $event) : Generator
-	{
-		return Main::getInstance()->getDataManager()->getDataSystem()->loadDataPlayerByMiddleware($event->getOrigin()->getPlayer());
+	protected Economy $economy;
+	public function __construct(PluginBase $plugin, string $name, Economy $economy, string $description = "", array $aliases = []){
+		parent::__construct($plugin, $name, $description, $aliases);
+		$this->economy = $economy;
 	}
 }
