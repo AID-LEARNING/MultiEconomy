@@ -83,7 +83,7 @@ class EcoPlayer implements JsonSerializable
 	/**
 	 * @internal Set economy amount in cents
 	 */
-	public function setEconomy(string $id, float $amount) : void
+	public function setEconomy(string $id, int $amount) : void
 	{
 		$this->economy[$id] = $amount;
 		if (EconomyChangeDataEvent::hasHandlers()) {
@@ -95,7 +95,7 @@ class EcoPlayer implements JsonSerializable
 	/**
 	 * @internal Add economy amount in cents
 	 */
-	public function addEconomy(string $id,float $amount) : void
+	public function addEconomy(string $id,int $amount) : void
 	{
 		if ($this->economy[$id] >= PHP_INT_MAX) {
 			return;
@@ -106,14 +106,14 @@ class EcoPlayer implements JsonSerializable
 	/**
 	 * @internal Subtract economy amount in cents
 	 */
-	public function subtractEconomy(string $id, float $amount) : void {
+	public function subtractEconomy(string $id, int $amount) : void {
 		$this->economy[$id] -= $amount;
 	}
 
 	/**
 	 * @internal Multiply economy amount in cents
 	 */
-	public function multiplyEconomy(string $id, float $amount) : void
+	public function multiplyEconomy(string $id, int $amount) : void
 	{
 		if ($this->economy[$id] >= PHP_INT_MAX) {
 			return;
@@ -124,7 +124,7 @@ class EcoPlayer implements JsonSerializable
 	/**
 	 * @internal Divide economy amount in cents
 	 */
-	public function divideEconomy(string $id, float $amount) : void {
+	public function divideEconomy(string $id, int $amount) : void {
 		if($amount === 0) {
 			return;
 		}
